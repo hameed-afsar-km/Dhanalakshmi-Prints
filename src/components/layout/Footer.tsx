@@ -4,8 +4,8 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { BRAND, STANDARD_SWATCH_COLORS } from '@/lib/constants';
-import { ShieldCheck, Truck, Sparkles, Clock, MapPin, Mail, Phone } from 'lucide-react';
+import { BRAND } from '@/lib/constants';
+import { ShieldCheck, Truck, Sparkles, Clock, MapPin, Mail, Phone, ArrowUpRight, Radio } from 'lucide-react';
 
 export default function Footer() {
   const pathname = usePathname();
@@ -14,10 +14,12 @@ export default function Footer() {
   }
 
   return (
-    <footer className="w-full bg-[#0d1e3e] text-slate-300 pt-16 pb-12 border-t border-slate-800">
+    <footer className="relative w-full overflow-hidden bg-[#07142c] text-slate-300 pt-16 pb-8 border-t border-slate-800">
+      <div className="pointer-events-none absolute -right-32 -top-40 h-96 w-96 rounded-full border border-indigo-400/15" />
+      <div className="pointer-events-none absolute -right-8 -top-16 h-64 w-64 rounded-full border border-amber-300/10" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Brand Value Pillars */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pb-12 border-b border-slate-700/60 mb-12">
+        <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8 pb-12 border-b border-slate-700/60 mb-12">
           <div className="flex items-start gap-4">
             <div className="p-3 rounded-xl bg-indigo-900/60 text-amber-400 border border-indigo-700/50">
               <Sparkles className="w-6 h-6" />
@@ -74,21 +76,9 @@ export default function Footer() {
               {BRAND.description}
             </p>
 
-            {/* Official Palette Swatches */}
-            <div className="pt-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block mb-2">
-                Brand Palette Colors
-              </span>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {STANDARD_SWATCH_COLORS.slice(0, 8).map((color) => (
-                  <span
-                    key={color.id}
-                    title={`${color.name}: ${color.hex}`}
-                    className="w-5 h-5 rounded-full border border-white/20 shadow-xs cursor-pointer hover:scale-110 transition-transform"
-                    style={{ backgroundColor: color.hex }}
-                  />
-                ))}
-              </div>
+            <div className="flex items-center gap-2 pt-2 text-[11px] font-semibold text-emerald-300">
+              <span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" /></span>
+              Print studio online
             </div>
           </div>
 
@@ -179,7 +169,7 @@ export default function Footer() {
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
           <p>© 2026 {BRAND.name}. All rights reserved.</p>
           <div className="flex items-center gap-6">
-            <span>Client Demonstration MVP</span>
+            <a href="mailto:support@dhanalakshmiprints.com" className="inline-flex items-center gap-1.5 hover:text-amber-300 transition-colors"><Radio className="w-3.5 h-3.5" /> Start a conversation <ArrowUpRight className="w-3 h-3" /></a>
             <span className="text-slate-700">|</span>
             <Link href="/admin" className="text-slate-400 hover:text-white">Admin Portal</Link>
           </div>

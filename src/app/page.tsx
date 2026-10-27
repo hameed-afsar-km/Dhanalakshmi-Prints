@@ -1,21 +1,23 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
   Sparkles,
   UploadCloud,
-  Layers,
   ArrowRight,
-  ShieldCheck,
   Truck,
-  RotateCw,
   Sliders,
   ChevronDown,
   CheckCircle2,
-  Box,
-  Palette,
+  CircleDot,
+  Cpu,
+  Gauge,
+  MoveRight,
+  MousePointer2,
+  ScanLine,
+  WandSparkles,
 } from 'lucide-react';
 import Hero3DScene from '@/components/3d/Hero3DScene';
 import { useStore } from '@/lib/store';
@@ -24,8 +26,23 @@ import { BRAND } from '@/lib/constants';
 export default function HomePage() {
   const { products } = useStore();
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [activeCategory, setActiveCategory] = useState('All');
+  const [activeWorkflow, setActiveWorkflow] = useState(0);
+  const [demoStyle, setDemoStyle] = useState<'classic' | 'bold' | 'minimal'>('classic');
+  const [idea, setIdea] = useState('A gift that feels like them');
 
-  const featuredProducts = products.filter((p) => p.isPublished).slice(0, 4);
+  const categories = ['All', ...Array.from(new Set(products.filter((p) => p.isPublished).map((p) => p.category)))];
+  const featuredProducts = useMemo(
+    () => products.filter((p) => p.isPublished && (activeCategory === 'All' || p.category === activeCategory)).slice(0, 4),
+    [activeCategory, products],
+  );
+
+  const workflow = [
+    { title: 'Upload your file', body: 'Drop an STL, OBJ, or 3MF and we will inspect its dimensions automatically.', icon: UploadCloud },
+    { title: 'Tune the build', body: 'Choose material, finish, quantity, scale, and the level of detail your project needs.', icon: Sliders },
+    { title: 'Approve your quote', body: 'Review a clear production quote and lead time before anything enters the print queue.', icon: ScanLine },
+    { title: 'Watch it take shape', body: 'Confirm in one click, select delivery, and follow your order from spool to doorstep.', icon: Truck },
+  ];
 
   const faqs = [
     {
@@ -53,25 +70,28 @@ export default function HomePage() {
   return (
     <div className="flex flex-col w-full min-h-screen">
       {/* 1. Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-white via-indigo-50/20 to-slate-50/50 pt-10 pb-20 lg:pt-16 lg:pb-28">
+      <section className="relative isolate overflow-hidden bg-[#f7f7fb] pt-8 pb-16 lg:pt-14 lg:pb-24">
+        <div className="absolute inset-0 -z-10 opacity-70 [background-image:linear-gradient(rgba(28,11,96,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(28,11,96,0.055)_1px,transparent_1px)] [background-size:34px_34px]" />
+        <div className="absolute -top-52 right-[-10%] -z-10 h-[40rem] w-[40rem] rounded-full bg-[radial-gradient(circle,rgba(231,30,100,0.18),rgba(254,208,3,0.08)_35%,transparent_68%)] blur-2xl" />
+        <div className="absolute bottom-[-20rem] left-[-16rem] -z-10 h-[38rem] w-[38rem] rounded-full bg-[radial-gradient(circle,rgba(1,156,135,0.18),transparent_65%)]" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
             {/* Left Column: Headline and CTAs */}
             <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-200/80 shadow-xs text-xs font-semibold text-indigo-900">
-                <span className="w-2 h-2 rounded-full bg-[#1c0b60]" />
-                Next-Gen 3D Digital Fabrication Studio
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 backdrop-blur border border-indigo-200/80 shadow-sm text-xs font-semibold text-indigo-900">
+                <span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#e71e64] opacity-75" /><span className="relative inline-flex h-2 w-2 rounded-full bg-[#e71e64]" /></span>
+                Made for ideas that should exist
               </div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.12]">
-                Your Ideas. <br />
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-[-0.055em] text-slate-950 leading-[0.98]">
+                Make it yours. <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1c0b60] via-[#e71e64] to-[#019c87]">
-                  Made Real in 3D.
+                  Make it real.
                 </span>
               </h1>
 
               <p className="text-base sm:text-lg text-slate-600 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Design custom personalized keychains, desk plaques, and accessories with instant 3D preview. Or upload your own 3D models for precision rapid manufacturing.
+                Give an everyday object a personality. Personalize a gift in our live studio, or send a 3D file and let our makers bring it off-screen.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
@@ -94,24 +114,27 @@ export default function HomePage() {
               </div>
 
               {/* Social Proof & Features */}
-              <div className="grid grid-cols-3 gap-4 pt-6 border-t border-slate-200/80">
+              <div className="grid grid-cols-3 gap-3 pt-6 border-t border-slate-300/70">
                 <div>
-                  <div className="text-2xl font-bold text-slate-900">0.05 mm</div>
-                  <div className="text-xs text-slate-500 font-medium">Layer Accuracy</div>
+                  <div className="text-xl font-bold text-slate-900">0.05 mm</div>
+                  <div className="text-[11px] text-slate-500 font-medium">precision layers</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-slate-900">100% Realtime</div>
-                  <div className="text-xs text-slate-500 font-medium">3D Preview Engine</div>
+                  <div className="text-xl font-bold text-slate-900">360°</div>
+                  <div className="text-[11px] text-slate-500 font-medium">live preview</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-slate-900">Same-Day</div>
-                  <div className="text-xs text-slate-500 font-medium">Production Dispatch</div>
+                  <div className="text-xl font-bold text-slate-900">Made local</div>
+                  <div className="text-[11px] text-slate-500 font-medium">with real care</div>
                 </div>
               </div>
             </div>
 
             {/* Right Column: Interactive 3D Hero Scene */}
-            <div className="lg:col-span-6 w-full">
+            <div className="lg:col-span-6 w-full relative">
+              <div className="hidden sm:flex absolute -left-4 top-1/2 z-10 -translate-y-1/2 flex-col gap-2 rounded-2xl border border-white/70 bg-white/80 p-2 shadow-xl backdrop-blur">
+                {[CircleDot, MousePointer2, Gauge].map((Icon, index) => <Icon key={index} className="h-4 w-4 text-[#1c0b60]" />)}
+              </div>
               <Hero3DScene />
             </div>
           </div>
@@ -142,11 +165,23 @@ export default function HomePage() {
             </Link>
           </div>
 
+          <div className="mb-8 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+            {categories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setActiveCategory(category)}
+                className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold transition-all ${activeCategory === category ? 'bg-[#1c0b60] text-white shadow-md shadow-indigo-950/15' : 'border border-slate-200 bg-slate-50 text-slate-600 hover:border-indigo-200 hover:bg-indigo-50'}`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {featuredProducts.map((product) => (
               <div
                 key={product.id}
-                className="group flex flex-col rounded-2xl border border-slate-200/90 bg-white overflow-hidden shadow-xs hover:shadow-xl hover:border-indigo-200 transition-all duration-300"
+                className="group flex flex-col rounded-2xl border border-slate-200/90 bg-white overflow-hidden shadow-xs hover:-translate-y-1 hover:shadow-xl hover:border-indigo-200 transition-all duration-300"
               >
                 {/* Product Image / 3D Tag */}
                 <div className="relative aspect-[4/3] w-full bg-slate-100 overflow-hidden">
@@ -263,7 +298,7 @@ export default function HomePage() {
 
             {/* Visual Feature Card */}
             <div className="relative p-6 sm:p-8 rounded-3xl bg-white border border-slate-200/90 shadow-xl overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full blur-3xl -z-10" />
+              <div className={`absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl -z-10 transition-colors duration-500 ${demoStyle === 'bold' ? 'bg-pink-100' : demoStyle === 'minimal' ? 'bg-teal-100' : 'bg-indigo-50'}`} />
               <div className="flex items-center justify-between pb-6 border-b border-slate-100">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-[#1c0b60] text-white flex items-center justify-center font-bold text-sm">
@@ -280,21 +315,31 @@ export default function HomePage() {
               </div>
 
               <div className="py-6 space-y-4">
+                <div className="rounded-2xl bg-[#0d1e3e] p-4 text-white shadow-lg">
+                  <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.18em] text-slate-300">
+                    <span>Quick style lab</span><WandSparkles className="h-4 w-4 text-amber-300" />
+                  </div>
+                  <div className="mt-3 grid grid-cols-3 gap-2">
+                    {(['classic', 'bold', 'minimal'] as const).map((style) => (
+                      <button key={style} onClick={() => setDemoStyle(style)} className={`rounded-lg py-2 text-[11px] font-bold capitalize transition-all ${demoStyle === style ? 'bg-white text-[#1c0b60] shadow-sm' : 'bg-white/10 text-slate-200 hover:bg-white/20'}`}>{style}</button>
+                    ))}
+                  </div>
+                </div>
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex items-center justify-between">
                   <span className="text-xs font-semibold text-slate-600">Sample Text</span>
-                  <span className="text-xs font-mono font-bold text-indigo-900 bg-white px-2 py-1 rounded border border-slate-200">
-                    TN 09 DP 2026
+                  <span className={`text-xs font-mono font-bold bg-white px-2 py-1 rounded border border-slate-200 ${demoStyle === 'bold' ? 'text-[#e71e64]' : demoStyle === 'minimal' ? 'text-[#019c87]' : 'text-indigo-900'}`}>
+                    {demoStyle === 'bold' ? 'MAKE IT LOUD' : demoStyle === 'minimal' ? 'HELLO, YOU.' : 'TN 09 DP 2026'}
                   </span>
                 </div>
 
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex items-center justify-between">
                   <span className="text-xs font-semibold text-slate-600">Material & Finish</span>
-                  <span className="text-xs font-semibold text-slate-900">Silk PLA (Metallic Sheen)</span>
+                  <span className="text-xs font-semibold text-slate-900">{demoStyle === 'bold' ? 'Silk PLA (Metallic)' : demoStyle === 'minimal' ? 'Matte PLA (Clean)' : 'Silk PLA (Metallic Sheen)'}</span>
                 </div>
 
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex items-center justify-between">
                   <span className="text-xs font-semibold text-slate-600">Calculated Price</span>
-                  <span className="text-sm font-extrabold text-[#1c0b60]">{BRAND.currency}268</span>
+                  <span className="text-sm font-extrabold text-[#1c0b60]">{BRAND.currency}{demoStyle === 'bold' ? '298' : demoStyle === 'minimal' ? '238' : '268'}</span>
                 </div>
               </div>
 
@@ -326,45 +371,26 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="p-6 rounded-2xl bg-indigo-950/40 border border-indigo-800/40 space-y-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-base">
-                1
-              </div>
-              <h3 className="font-bold text-base text-white">Upload 3D File</h3>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Drag and drop STL, OBJ, or 3MF files into our browser viewer. Inspect dimensions and triangle counts automatically.
-              </p>
+          <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-5">
+            <div className="grid grid-cols-2 gap-3">
+              {workflow.map((step, index) => {
+                const Icon = step.icon;
+                return <button key={step.title} onClick={() => setActiveWorkflow(index)} className={`group rounded-2xl border p-5 text-left transition-all ${activeWorkflow === index ? 'border-amber-300 bg-amber-400 text-slate-950 shadow-lg shadow-amber-400/10' : 'border-indigo-800/50 bg-indigo-950/40 text-white hover:border-indigo-500 hover:bg-indigo-900/60'}`}>
+                  <div className={`mb-7 flex h-9 w-9 items-center justify-center rounded-xl text-xs font-extrabold ${activeWorkflow === index ? 'bg-slate-950 text-amber-300' : 'bg-white/10 text-amber-300'}`}>{index + 1}</div>
+                  <Icon className="mb-3 h-5 w-5" />
+                  <span className="block text-sm font-bold leading-tight">{step.title}</span>
+                </button>;
+              })}
             </div>
-
-            <div className="p-6 rounded-2xl bg-indigo-950/40 border border-indigo-800/40 space-y-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-base">
-                2
+            <div className="relative overflow-hidden rounded-3xl border border-indigo-800/50 bg-[linear-gradient(135deg,rgba(28,11,96,0.75),rgba(1,156,135,0.25))] p-7 sm:p-10">
+              <div className="absolute right-[-5%] top-[-16%] h-56 w-56 rounded-full border border-white/10" />
+              <div className="absolute right-[9%] top-[6%] h-32 w-32 rounded-full border border-white/10" />
+              <div className="relative">
+                <span className="inline-flex rounded-full border border-amber-300/40 bg-amber-300/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-300">Step {activeWorkflow + 1} of 4</span>
+                <h3 className="mt-6 text-3xl font-extrabold tracking-tight text-white">{workflow[activeWorkflow].title}</h3>
+                <p className="mt-3 max-w-md text-sm leading-relaxed text-slate-200">{workflow[activeWorkflow].body}</p>
+                <div className="mt-10 flex items-center gap-3 text-xs font-semibold text-white"><Cpu className="h-4 w-4 text-amber-300" /> No guesswork. Just a clear path from file to finished object.</div>
               </div>
-              <h3 className="font-bold text-base text-white">Select Preferences</h3>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Choose quantity, filament material (PLA, PETG, Resin, Carbon-Fiber), scaling percentage, and optional infill density.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-indigo-950/40 border border-indigo-800/40 space-y-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-base">
-                3
-              </div>
-              <h3 className="font-bold text-base text-white">Review Quotation</h3>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Our print engineers calculate print time and published quotation price with estimated lead days.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-indigo-950/40 border border-indigo-800/40 space-y-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-base">
-                4
-              </div>
-              <h3 className="font-bold text-base text-white">Confirm & Dispatch</h3>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Accept quote with 1-click, choose your preferred delivery time slot, and track real-time fulfillment progress.
-              </p>
             </div>
           </div>
 
@@ -422,28 +448,17 @@ export default function HomePage() {
       </section>
 
       {/* 6. Final CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-[#1c0b60] via-[#0d1e3e] to-[#1c0b60] text-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
-            Ready to bring your 3D idea to life?
-          </h2>
-          <p className="text-sm sm:text-base text-slate-300 max-w-xl mx-auto">
-            Choose from our bespoke ready-to-personalize collection or send us your custom CAD file for an instant quotation.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-            <Link
-              href="/shop"
-              className="px-7 py-3 rounded-xl font-semibold text-slate-950 bg-[#fed003] hover:bg-amber-300 transition-colors shadow-lg"
-            >
-              Explore Catalog
-            </Link>
-            <Link
-              href="/custom-printing"
-              className="px-7 py-3 rounded-xl font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/20 transition-colors backdrop-blur-sm"
-            >
-              Upload Custom 3D Model
-            </Link>
+      <section className="relative overflow-hidden py-20 bg-[#0d1e3e] text-white">
+        <div className="absolute inset-0 opacity-30 [background-image:radial-gradient(rgba(254,208,3,0.9)_1px,transparent_1px)] [background-size:22px_22px]" />
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-amber-300"><Sparkles className="h-3.5 w-3.5" /> Your idea, in one line</span>
+          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">What will you make next?</h2>
+          <p className="text-sm sm:text-base text-slate-300 max-w-xl mx-auto">Start with a thought. We’ll give you the tools, the preview, and the production know-how to turn it into something you can hold.</p>
+          <div className="mx-auto flex max-w-xl flex-col gap-3 rounded-2xl border border-white/15 bg-white/10 p-2 backdrop-blur sm:flex-row">
+            <input value={idea} onChange={(event) => setIdea(event.target.value)} aria-label="Your next idea" className="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm text-white outline-none placeholder:text-slate-400" placeholder="A tiny idea with a big personality" />
+            <Link href="/shop" className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#fed003] px-5 py-3 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-0.5"><span>Start creating</span><MoveRight className="h-4 w-4" /></Link>
           </div>
+          <p className="text-xs text-slate-400">Currently imagining: <span className="font-semibold text-slate-200">{idea || 'something special'}</span></p>
         </div>
       </section>
     </div>
