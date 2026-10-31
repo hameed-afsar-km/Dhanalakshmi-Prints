@@ -12,7 +12,7 @@ export default function PageTransition({ children }: { children: ReactNode }) {
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={pathname}
-        className="flex w-full flex-1 flex-col"
+        className="flex w-full flex-1 flex-col overflow-x-hidden"
         initial={reduceMotion ? false : { opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
         exit={reduceMotion ? undefined : { opacity: 0, y: -10 }}

@@ -13,8 +13,8 @@ const items = [
 
 export default function HeroMarquee() {
   return (
-    <div className="group relative overflow-hidden border-t border-brand-primary/10 bg-white/80 py-3.5 backdrop-blur-md">
-      <div className="marquee-mask flex overflow-hidden">
+    <div className="group relative w-full max-w-full overflow-hidden border-t border-brand-primary/10 bg-white/80 py-3.5 backdrop-blur-md">
+      <div className="marquee-mask flex w-full max-w-full overflow-hidden">
         <div className="flex w-max shrink-0 [animation:marquee_36s_linear_infinite] group-hover:[animation-play-state:paused]">
           {[0, 1].map((copy) => (
             <div key={copy} className="flex shrink-0 items-center" aria-hidden={copy === 1}>

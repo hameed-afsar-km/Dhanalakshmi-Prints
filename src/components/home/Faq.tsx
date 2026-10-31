@@ -1,103 +1,154 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, HelpCircle, Mail, MessageSquare, Phone, Plus } from 'lucide-react';
+import {
+  ChevronDown,
+  HelpCircle,
+  Mail,
+  MessageCircle,
+  Plus,
+  Minus,
+  Sparkles,
+} from 'lucide-react';
 import { BRAND } from '@/lib/constants';
-import SectionHeading from '@/components/ui/SectionHeading';
 import Reveal from '@/components/ui/Reveal';
 
 interface FaqItem {
+  id: string;
+  category: 'Customizer' | 'Materials' | 'Shipping' | 'CAD / Upload' | 'Bulk Orders';
   q: string;
   a: string;
-  category: 'Customization' | 'Materials' | 'Delivery' | 'CAD / Files';
+  badge?: string;
 }
 
 const FAQS_DATA: FaqItem[] = [
   {
-    category: 'Customization',
-    q: 'HOW DOES THE 3D CUSTOMIZATION WORK IN REAL-TIME?',
-    a: 'Pick any customizable design (such as our customized number plates, nameplates, or keychains), type your text, choose your preferred dual-color polymer shades, and watch the 3D preview render directly in your browser. Our engineers verify readability and layer line strength before manufacturing.',
+    id: 'faq-1',
+    category: 'Customizer',
+    q: 'How does the 3D customization work in real-time?',
+    a: 'Choose any customizable model in our studio (number plates, cursive keychains, or desk signs), type your desired text, pick your dual-color polymer shades, and watch the photorealistic 3D model update instantly in your browser with live pricing.',
+    badge: 'Real-Time 3D',
   },
   {
-    category: 'CAD / Files',
-    q: 'WHAT 3D FILE FORMATS CAN I UPLOAD FOR CUSTOM FABRICATION?',
-    a: 'We accept standard CAD and mesh formats including .STL, .OBJ, .GLB, .GLTF, and .3MF files up to 50 MB. Our automated geometry inspector calculates dimensions, polygon counts, and bounding volume instantly, followed by a human engineering review.',
+    id: 'faq-2',
+    category: 'CAD / Upload',
+    q: 'What 3D file formats can I upload for custom fabrication?',
+    a: 'We accept standard CAD and polygonal mesh files including .STL, .OBJ, .GLB, .GLTF, and .3MF files up to 50 MB. Our slicers inspect your geometry for wall thickness and printability within minutes.',
+    badge: '.STL / .OBJ / .3MF',
   },
   {
+    id: 'faq-3',
     category: 'Materials',
-    q: 'WHICH POLYMERS AND 3D PRINTING FILAMENTS DO YOU USE?',
-    a: 'We print with premium grade Tough PLA, High-Gloss Silk PLA (liquid metallic sheen), Engineering PETG (temperature and impact resistant), Carbon Fiber composites, and Micron-Precision SLA Resin for jewelry and miniatures.',
+    q: 'Which polymers and filaments do you print with?',
+    a: 'We fabricate with high-strength Tough PLA, liquid-sheen Silk PLA, weather-resistant PETG, lightweight Carbon Fiber composite, and micron-accurate SLA resin for ultra-fine figurines and miniature detailing.',
+    badge: 'Tough PLA & PETG',
   },
   {
-    category: 'Delivery',
-    q: 'HOW LONG DOES PRODUCTION AND DELIVERY TAKE ACROSS INDIA?',
-    a: 'Standard catalogue and customized pieces leave our Chennai studio within 2 to 4 working days. Express rush dispatch is available for urgent gifts. We ship pan-India with tamper-proof gift-ready packaging and live tracking.',
+    id: 'faq-4',
+    category: 'Shipping',
+    q: 'How long does production and delivery take across India?',
+    a: 'Standard catalogue and custom orders are printed and hand-finished in our Tiruchendur studio within 2 to 4 working days, then shipped via express couriers with end-to-end tracking to your doorstep.',
+    badge: 'Pan-India Delivery',
   },
   {
-    category: 'Customization',
-    q: 'CAN I PRINT PHOTO GIFTS LIKE LITHOPHANE LAMPS?',
-    a: 'Yes! Our custom Lithophane lamps turn any high-resolution photo into a 3D translucent embossed surface. When illuminated from inside, the varying layer thicknesses reveal the photograph with stunning photographic fidelity.',
+    id: 'faq-5',
+    category: 'Shipping',
+    q: 'What happens if a print arrives damaged in transit?',
+    a: 'Every parcel is packed in multi-layer foam and fully insured. In the rare event of transit damage, simply share an unboxing photo on WhatsApp within 48 hours and we will reprint and dispatch a replacement free of charge.',
+    badge: '100% Guarantee',
   },
   {
-    category: 'Delivery',
-    q: 'WHAT HAPPENS IF A PRINT ARRIVES DAMAGED IN TRANSIT?',
-    a: 'Every package is insured and carefully bubble-cushioned. In the rare event of transit damage, simply send us photos within 48 hours and we will reprint and dispatch a replacement on highest priority at zero additional cost.',
-  },
-  {
-    category: 'CAD / Files',
-    q: 'DO YOU PROVIDE BULK COMMISSIONS AND CORPORATE GIFTING?',
-    a: 'Yes, we regularly produce batch runs for corporate gifting, hackathons, team awards, and wedding souvenirs. We offer tiered bulk volume discounts and customized packaging branding upon request.',
+    id: 'faq-6',
+    category: 'Bulk Orders',
+    q: 'Can you fabricate bulk corporate gifts or bespoke commissions?',
+    a: 'Yes! We regularly produce branded company keychains, event awards, architect models, and personalized merchandise in runs from 10 to 10,000+ units with tiered volume discounts and custom branding.',
+    badge: 'B2B & Volume',
   },
 ];
 
-const CATEGORIES = ['All', 'Customization', 'Materials', 'Delivery', 'CAD / Files'] as const;
+const CATEGORIES = ['All', 'Customizer', 'Materials', 'Shipping', 'CAD / Upload', 'Bulk Orders'] as const;
 
 export default function Faq() {
   const [activeCategory, setActiveCategory] = useState<string>('All');
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [openId, setOpenId] = useState<string | null>('faq-1');
 
   const filteredFaqs =
     activeCategory === 'All'
       ? FAQS_DATA
       : FAQS_DATA.filter((item) => item.category === activeCategory);
 
-  return (
-    <section id="faq" className="relative overflow-hidden py-18 sm:py-22 lg:py-26 bg-brand-offwhite">
-      <div className="pointer-events-none absolute inset-0 opacity-[0.4] [background-image:radial-gradient(rgba(28,11,96,0.08)_1px,transparent_1px)] [background-size:26px_26px]" />
-      <div className="pointer-events-none absolute -left-24 top-24 h-72 w-72 rounded-full bg-brand-gold/15 blur-[100px]" />
-      <div className="pointer-events-none absolute -right-20 bottom-10 h-80 w-80 rounded-full bg-brand-pink/10 blur-[110px]" />
+  const toggleFaq = (id: string) => {
+    setOpenId((prev) => (prev === id ? null : id));
+  };
 
-      <div className="relative mx-auto max-w-[92rem] px-4 sm:px-6 lg:px-10">
+  return (
+    <section
+      id="faq"
+      className="relative z-10 w-full max-w-full flex flex-col justify-center py-10 sm:py-14 lg:h-[100svh] lg:min-h-[100svh] lg:max-h-[100svh] lg:py-6 overflow-hidden text-black"
+      style={{ scrollMarginTop: '80px' }}
+    >
+      {/* Background Images with 100% full opacity */}
+      <div className="absolute inset-0 hidden lg:block" aria-hidden>
+        <Image
+          src="/assets/FAQ-bg.png"
+          alt="FAQ background"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+      </div>
+
+      <div className="absolute inset-0 lg:hidden" aria-hidden>
+        <Image
+          src="/assets/FAQ-bg-mob.png"
+          alt="FAQ mobile background"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+      </div>
+
+      {/* Main Content: Perfectly centered in the open sky-blue region, leaving corner 3D artwork completely clear */}
+      <div className="relative mx-auto w-full max-w-5xl px-4 sm:px-6 z-10 flex flex-col justify-center my-auto">
+        {/* Header Block */}
         <Reveal>
-          <SectionHeading
-            eyebrow="Help & Knowledge Base"
-            title={
-              <>
-                Frequently Asked
-                <br />
-                <span className="text-brand-pink">Questions.</span>
-              </>
-            }
-            description="Clear answers regarding our 3D digital fabrication process, materials, custom file uploads, production lead times, and pan-India doorstep delivery."
-          />
+          <div className="text-center max-w-xl mx-auto mb-3 sm:mb-4">
+            <div className="inline-flex items-center gap-2 rounded-full border border-black/15 bg-white/90 px-3.5 py-1 backdrop-blur-md shadow-xs">
+              <span className="h-2 w-2 rounded-full bg-brand-pink animate-pulse" />
+              <span className="font-heading text-[10.5px] font-bold uppercase tracking-[0.2em] text-slate-800">
+                Help & Knowledge Base
+              </span>
+            </div>
+            <h2 className="mt-2 font-heading text-[clamp(1.75rem,3.2vw,2.6rem)] font-black uppercase leading-[1.05] tracking-tight text-slate-900">
+              Frequently Asked <span className="text-brand-pink">Questions.</span>
+            </h2>
+            <p className="mt-1 font-sans text-xs sm:text-[13px] text-slate-600 max-w-md mx-auto">
+              Everything you need to know about our precision 3D fabrication, materials, and delivery.
+            </p>
+          </div>
         </Reveal>
 
-        {/* Category Filter Pills */}
-        <Reveal delay={0.05} className="mt-8">
-          <div className="flex flex-wrap items-center gap-2">
+        {/* Filter Pills */}
+        <Reveal delay={0.04} className="mb-3 sm:mb-4 flex justify-center">
+          <div className="inline-flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 rounded-full border border-black/15 bg-white/85 p-1 backdrop-blur-md shadow-xs max-w-full overflow-x-auto">
             {CATEGORIES.map((cat) => (
               <button
                 key={cat}
                 type="button"
                 onClick={() => {
                   setActiveCategory(cat);
-                  setOpenIndex(0);
+                  // Auto-open first item in new category
+                  const firstMatch = cat === 'All' ? FAQS_DATA[0] : FAQS_DATA.find((item) => item.category === cat);
+                  if (firstMatch) setOpenId(firstMatch.id);
                 }}
-                className={`rounded-full px-4 py-2 font-sans text-xs font-semibold transition-all ${
+                className={`rounded-full px-3 py-1 font-sans text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
                   activeCategory === cat
-                    ? 'bg-brand-primary text-white shadow-sm'
-                    : 'border border-brand-primary/10 bg-white/80 text-brand-navy/70 hover:border-brand-primary/30 hover:bg-white hover:text-brand-primary'
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'text-slate-700 hover:text-black hover:bg-black/5'
                 }`}
               >
                 {cat}
@@ -106,113 +157,116 @@ export default function Faq() {
           </div>
         </Reveal>
 
-        {/* Accordion + Support Card */}
-        <div className="mt-8 grid gap-8 lg:grid-cols-12 lg:items-start">
-          <div className="space-y-3 lg:col-span-8">
+        {/* Modern 2-Column Responsive FAQ Grid */}
+        <Reveal delay={0.08} className="w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-3">
             {filteredFaqs.map((faq, index) => {
-              const isOpen = openIndex === index;
+              const isOpen = openId === faq.id;
               return (
-                <Reveal key={faq.q} delay={0.04 * index}>
-                  <div
-                    className={`overflow-hidden rounded-2xl border transition-all ${
-                      isOpen
-                        ? 'border-brand-primary/30 bg-white shadow-md'
-                        : 'border-brand-primary/10 bg-white/70 hover:border-brand-primary/20 hover:bg-white'
-                    }`}
+                <div
+                  key={faq.id}
+                  className={`group rounded-2xl border transition-all duration-200 overflow-hidden backdrop-blur-xl ${
+                    isOpen
+                      ? 'border-black/30 bg-white/95 shadow-[0_12px_32px_-12px_rgba(28,11,96,0.12)] ring-1 ring-black/5'
+                      : 'border-black/12 bg-white/75 hover:bg-white/90 hover:border-black/25 shadow-xs'
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleFaq(faq.id)}
+                    className="flex w-full items-start justify-between gap-3 p-3 sm:p-3.5 text-left"
+                    aria-expanded={isOpen}
                   >
-                    <button
-                      type="button"
-                      onClick={() => setOpenIndex(isOpen ? null : index)}
-                      className="flex w-full items-center justify-between gap-4 p-5 text-left sm:p-6"
-                      aria-expanded={isOpen}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="rounded-full bg-brand-primary/10 px-2.5 py-1 font-sans text-[9px] font-bold uppercase tracking-[0.14em] text-brand-primary">
-                          {faq.category}
-                        </span>
-                        <h4 className="font-nechlas text-base uppercase tracking-[0.02em] text-brand-navy sm:text-lg">
-                          {faq.q}
-                        </h4>
-                      </div>
+                    <div className="flex items-start gap-2.5 min-w-0 flex-1">
                       <span
-                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-transform duration-300 ${
-                          isOpen
-                            ? 'rotate-180 border-brand-primary bg-brand-primary text-white'
-                            : 'border-brand-primary/15 bg-brand-lavender/50 text-brand-primary'
+                        className={`font-mono text-[10px] font-bold px-1.5 py-0.5 rounded transition-colors shrink-0 mt-0.5 ${
+                          isOpen ? 'bg-brand-pink text-white' : 'bg-black/5 text-slate-500'
                         }`}
                       >
-                        <ChevronDown className="h-4 w-4" />
+                        0{index + 1}
                       </span>
-                    </button>
+                      <div className="min-w-0">
+                        <h3 className="font-heading text-[12.5px] sm:text-[13.5px] font-bold uppercase tracking-tight text-slate-900 leading-snug">
+                          {faq.q}
+                        </h3>
+                        {faq.badge && (
+                          <span className="mt-1 inline-block text-[9px] font-sans font-bold uppercase tracking-wider text-brand-purple">
+                            {faq.badge}
+                          </span>
+                        )}
+                      </div>
+                    </div>
 
-                    <AnimatePresence initial={false}>
-                      {isOpen && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.25 }}
-                        >
-                          <div className="border-t border-brand-primary/10 p-5 pt-4 sm:p-6 sm:pt-4">
-                            <p className="font-sans text-xs leading-relaxed text-brand-navy/75 sm:text-sm">
-                              {faq.a}
-                            </p>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </Reveal>
+                    <span
+                      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition-all duration-200 mt-0.5 ${
+                        isOpen
+                          ? 'border-slate-900 bg-slate-900 text-white rotate-180'
+                          : 'border-black/20 bg-white/80 text-slate-700 group-hover:border-black/40'
+                      }`}
+                    >
+                      <ChevronDown className="h-3.5 w-3.5" />
+                    </span>
+                  </button>
+
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="border-t border-black/8 px-3.5 pb-3 pt-2 sm:px-4 sm:pb-3.5 sm:pt-2.5 bg-black/[0.015]">
+                          <p className="font-sans text-[11.5px] sm:text-[12.5px] leading-relaxed text-slate-700 font-medium">
+                            {faq.a}
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               );
             })}
           </div>
+        </Reveal>
 
-          {/* Quick Help Card */}
-          <div className="lg:col-span-4">
-            <Reveal delay={0.1}>
-              <div className="rounded-[2rem] border border-brand-primary/15 bg-brand-primary p-6 text-white shadow-[0_25px_60px_-30px_rgba(28,11,96,0.5)] sm:p-8">
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-brand-gold">
-                  <MessageSquare className="h-6 w-6" />
-                </span>
-
-                <h4 className="mt-5 font-nechlas text-2xl uppercase tracking-[0.02em] text-white">
-                  Have A Custom Idea?
-                </h4>
-                <p className="mt-2 font-sans text-xs leading-relaxed text-white/70">
-                  Can&apos;t find your exact answer? Reach out to our 3D print engineering team directly. We evaluate custom CAD sketches, batch production, and special requests.
+        {/* Integrated Sleek Support Banner */}
+        <Reveal delay={0.12} className="mt-3 sm:mt-4 w-full">
+          <div className="rounded-2xl border border-black/15 bg-white/90 p-2.5 sm:p-3 px-3.5 sm:px-4 backdrop-blur-xl shadow-xs flex flex-wrap items-center justify-between gap-2.5">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-pink/15 text-brand-pink shrink-0">
+                <Sparkles className="h-3.5 w-3.5" />
+              </span>
+              <div>
+                <p className="font-heading text-[12px] font-extrabold uppercase tracking-tight text-slate-900">
+                  Have a custom CAD file or unique gift idea?
                 </p>
-
-                <div className="mt-6 space-y-3">
-                  <a
-                    href={`https://wa.me/${BRAND.phone.replace(/[^0-9]/g, '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-between rounded-xl bg-brand-gold px-4 py-3 font-sans text-xs font-bold uppercase tracking-[0.12em] text-brand-navy transition-all hover:bg-white"
-                  >
-                    <span>Chat On WhatsApp</span>
-                    <Phone className="h-4 w-4" />
-                  </a>
-
-                  <a
-                    href={`mailto:${BRAND.supportEmail}`}
-                    className="flex items-center justify-between rounded-xl border border-white/20 bg-white/10 px-4 py-3 font-sans text-xs font-bold uppercase tracking-[0.12em] text-white transition-all hover:bg-white/20"
-                  >
-                    <span>Email Studio</span>
-                    <Mail className="h-4 w-4" />
-                  </a>
-                </div>
-
-                <div className="mt-6 border-t border-white/15 pt-4">
-                  <p className="font-sans text-[11px] text-white/50">
-                    Studio Location: <span className="text-white/80">{BRAND.location}</span>
-                    <br />
-                    Mon — Sat · 9:00 AM — 8:00 PM
-                  </p>
-                </div>
+                <p className="font-sans text-[10.5px] text-slate-600 hidden sm:block">
+                  Chat directly with our 3D engineers · Free geometry review & quick quote.
+                </p>
               </div>
-            </Reveal>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <a
+                href={`https://wa.me/${BRAND.whatsappNumber}?text=Hi%20Dhanalakshmi%20Prints,%20I%20have%20a%20question%20about%20a%20custom%203D%20print.`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#128C7E] hover:bg-[#075E54] text-white px-3.5 py-1.5 font-sans text-[11px] font-bold uppercase tracking-wider shadow-xs transition-colors"
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+                <span>WhatsApp Us</span>
+              </a>
+              <a
+                href={`mailto:${BRAND.supportEmail}`}
+                className="inline-flex items-center gap-1.5 rounded-full border border-black/20 bg-white hover:bg-black/5 text-slate-800 px-3 py-1.5 font-sans text-[11px] font-bold uppercase tracking-wider transition-colors"
+              >
+                <Mail className="h-3.5 w-3.5" />
+                <span>Email</span>
+              </a>
+            </div>
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

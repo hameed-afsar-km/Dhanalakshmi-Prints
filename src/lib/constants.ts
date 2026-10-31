@@ -6,6 +6,7 @@ export const BRAND = {
   paletteUrl: '/assets/color-palette.png',
   supportEmail: 'contact@dhanalakshmiprints.com',
   phone: '+91 98400 12345',
+  whatsappNumber: '919840012345',
   location: 'Chennai, Tamil Nadu, India',
   currency: '₹',
   colors: {

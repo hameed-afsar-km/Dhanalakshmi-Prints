@@ -310,17 +310,57 @@ export default function ProductViewer3D({ product, customization, className = ''
       productGroup.add(ringMesh);
 
     } else if (product.modelType === 'name-keychain') {
-      // Name typography plate with 3D letters
-      const baseWidth = Math.max(45, displayText.length * 6.5);
-      const baseGeo = new THREE.BoxGeometry(baseWidth, 14, 4.5);
-      const textTexture = createTextCanvasTexture(displayText, baseWidth, 14, bodyHex, textHex);
+      // Cursive Name Keychain with offset stroke contour and daisy charm (as in user reference)
+      const baseWidth = Math.max(52, displayText.length * 7.5);
+      const baseGeo = new THREE.BoxGeometry(baseWidth, 18, 5.0);
+
+      // Generate cursive textured plate with thick offset contour
+      const canvas = document.createElement('canvas');
+      canvas.width = 1024;
+      canvas.height = 360;
+      const ctx = canvas.getContext('2d')!;
+
+      ctx.fillStyle = bodyHex;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Rounded soft contour outline plate
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 16;
+      ctx.strokeRect(14, 14, canvas.width - 28, canvas.height - 28);
+
+      const formatted = displayText.charAt(0).toUpperCase() + displayText.slice(1);
+      ctx.font = "italic bold 170px 'Dancing Script', 'Brush Script MT', 'Pacifico', 'Caveat', 'Segoe Script', cursive, sans-serif";
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // Thick stroke border in body color
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 32;
+      ctx.strokeStyle = bodyHex;
+      ctx.strokeText(formatted, canvas.width / 2, canvas.height / 2);
+
+      // White outline contour
+      ctx.lineWidth = 14;
+      ctx.strokeStyle = '#ffffff';
+      ctx.strokeText(formatted, canvas.width / 2, canvas.height / 2);
+
+      // Inner text fill with soft 3D shadow
+      ctx.shadowColor = 'rgba(0,0,0,0.3)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetX = 3;
+      ctx.shadowOffsetY = 4;
+      ctx.fillStyle = textHex || '#ffffff';
+      ctx.fillText(formatted, canvas.width / 2, canvas.height / 2);
+
+      const cursiveTexture = new THREE.CanvasTexture(canvas);
+      cursiveTexture.anisotropy = 8;
 
       const materials = [
         bodyMaterial,
         bodyMaterial,
         bodyMaterial,
         bodyMaterial,
-        new THREE.MeshPhysicalMaterial({ map: textTexture, roughness, metalness }),
+        new THREE.MeshPhysicalMaterial({ map: cursiveTexture, roughness, metalness }),
         bodyMaterial,
       ];
 
@@ -328,17 +368,44 @@ export default function ProductViewer3D({ product, customization, className = ''
       nameMesh.castShadow = true;
       productGroup.add(nameMesh);
 
-      // Keyring attachment
-      const loopGeo = new THREE.TorusGeometry(3.5, 1.1, 16, 32);
+      // Keyring attachment loop
+      const loopGeo = new THREE.TorusGeometry(4.0, 1.2, 16, 32);
       const loopMesh = new THREE.Mesh(loopGeo, bodyMaterial);
-      loopMesh.position.set(-baseWidth / 2 - 2.2, 0, 0);
+      loopMesh.position.set(-baseWidth / 2 - 2.8, 1, 0);
       productGroup.add(loopMesh);
 
-      const ringGeo = new THREE.TorusGeometry(8.0, 0.9, 16, 48);
-      const chromeMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.85, roughness: 0.2 });
+      // Metal split keyring
+      const ringGeo = new THREE.TorusGeometry(8.5, 1.0, 16, 48);
+      const chromeMat = new THREE.MeshStandardMaterial({ color: 0xd8d8e0, metalness: 0.9, roughness: 0.15 });
       const ringMesh = new THREE.Mesh(ringGeo, chromeMat);
-      ringMesh.position.set(-baseWidth / 2 - 9, -2, 0);
+      ringMesh.position.set(-baseWidth / 2 - 10.5, -1, 0);
       productGroup.add(ringMesh);
+
+      // Daisy flower charm hanging from the ring (as in user reference photo)
+      const flowerGroup = new THREE.Group();
+      flowerGroup.position.set(-baseWidth / 2 - 6, 9, 1);
+
+      // White petals
+      const petalMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
+      for (let i = 0; i < 6; i++) {
+        const angle = (i * Math.PI) / 3;
+        const petalGeo = new THREE.SphereGeometry(2.0, 16, 16);
+        petalGeo.scale(1.4, 0.9, 0.7);
+        const petal = new THREE.Mesh(petalGeo, petalMat);
+        petal.position.set(Math.cos(angle) * 3.2, Math.sin(angle) * 3.2, 0);
+        petal.rotation.z = angle;
+        flowerGroup.add(petal);
+      }
+
+      // Pink flower center button
+      const centerMat = new THREE.MeshStandardMaterial({ color: 0xe71e64, roughness: 0.2 });
+      const centerGeo = new THREE.CylinderGeometry(1.8, 1.8, 1.2, 24);
+      centerGeo.rotateX(Math.PI / 2);
+      const flowerCenter = new THREE.Mesh(centerGeo, centerMat);
+      flowerCenter.position.z = 0.4;
+      flowerGroup.add(flowerCenter);
+
+      productGroup.add(flowerGroup);
 
     } else if (product.modelType === 'desk-nameplate') {
       // Architectural Triangular Beveled Desk Base

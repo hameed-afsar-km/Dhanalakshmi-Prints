@@ -1,6 +1,6 @@
 export type MaterialType = 'PLA' | 'PETG' | 'ABS' | 'Resin' | 'Silk PLA' | 'Carbon Fiber PLA';
 
-export type FontOption = 'Inter' | 'Montserrat' | 'Playfair' | 'Bebas Neue' | 'Fira Code' | 'Orbitron';
+export type FontOption = 'Inter' | 'Montserrat' | 'Playfair' | 'Bebas Neue' | 'Fira Code' | 'Orbitron' | 'Dancing Script' | 'Pacifico' | 'Caveat';
 
 export interface ColorOption {
   id: string;

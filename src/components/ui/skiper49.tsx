@@ -1,142 +1,279 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import Link from 'next/link';
-import { useRef } from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { A11y, Autoplay, EffectCoverflow, Keyboard, Navigation, Pagination } from 'swiper/modules';
-import type { Swiper as SwiperClass } from 'swiper/types';
-import { ArrowLeft, ArrowRight, ArrowUpRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import 'swiper/css';
-import 'swiper/css/effect-coverflow';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
+import { motion } from "framer-motion";
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import React from "react";
+import {
+  Autoplay,
+  EffectCoverflow,
+  Navigation,
+  Pagination,
+} from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css/effect-coverflow";
+import "swiper/css/pagination";
+import "swiper/css/navigation";
+import "swiper/css";
+import "swiper/css/effect-cards";
+
+import { cn } from "@/lib/utils";
 
 export interface Skiper49Item {
-  id: string;
-  title: string;
-  subtitle?: string;
-  image: string;
-  href: string;
-  meta?: string;
+  src?: string;
+  image?: string;
+  alt?: string;
+  title?: string;
+  category?: string;
+  href?: string;
 }
 
 interface Skiper49Props {
-  items: Skiper49Item[];
+  images?: { src: string; alt: string; title?: string; category?: string; href?: string }[];
+  items?: Skiper49Item[];
   className?: string;
-  autoplay?: boolean;
-  loop?: boolean;
-  onSlideChange?: (index: number) => void;
 }
 
-export default function Skiper49({
-  items,
-  className,
-  autoplay = true,
-  loop = true,
-  onSlideChange,
-}: Skiper49Props) {
-  const swiperRef = useRef<SwiperClass | null>(null);
+const defaultAssets = [
+  {
+    src: "/assets/number-plate-keychain.jpg",
+    alt: "Personalized Number-Plate Keychain",
+    title: "Nameplate Keychain",
+    category: "Automotive Series",
+  },
+  {
+    src: "/assets/cursive-name-keychain.jpg",
+    alt: "Custom Cursive Name Keychain",
+    title: "Cursive Script Keychain",
+    category: "Bespoke Charm",
+  },
+  {
+    src: "/assets/nameplate bevelled.webp",
+    alt: "Executive Bevelled Desk Nameplate",
+    title: "Desk Nameplate",
+    category: "Office & Studio",
+  },
+  {
+    src: "/assets/3d-figure.jpg",
+    alt: "Caricature 3D Print Figurine",
+    title: "Caricature Print",
+    category: "Sculptural Figurine",
+  },
+  {
+    src: "/assets/photolamp.jpg",
+    alt: "Custom Lithophane Photo Lamp",
+    title: "Lithophane Photo Lamp",
+    category: "Illuminated Memory",
+  },
+  {
+    src: "/assets/Luggage-tag.webp",
+    alt: "Industrial Travel Luggage Tag",
+    title: "Travel Luggage Tag",
+    category: "Travel Series",
+  },
+  {
+    src: "/assets/3d vase miniature.jpg",
+    alt: "Parametric Spiral Art Miniature Vase",
+    title: "Parametric Art Vase",
+    category: "Home Decor",
+  },
+];
 
-  if (!items.length) return null;
+const Skiper49 = ({ images: customImages, items, className }: Skiper49Props = {}) => {
+  const images = customImages || (items ? items.map((it) => ({
+    src: it.src || it.image || '',
+    alt: it.alt || it.title || 'Studio 3D printed piece',
+    title: it.title || it.alt || 'Studio 3D piece',
+    category: it.category || 'Curated Design',
+  })) : defaultAssets);
 
   return (
-    <div className={cn('skiper49 relative', className)}>
-      <Swiper
-        modules={[A11y, Autoplay, EffectCoverflow, Keyboard, Navigation, Pagination]}
-        onSwiper={(swiper) => {
-          swiperRef.current = swiper;
-        }}
-        onSlideChange={(swiper) => onSlideChange?.(swiper.realIndex)}
-        effect="coverflow"
-        grabCursor
-        centeredSlides
-        loop={loop}
-        keyboard={{ enabled: true }}
-        slidesPerView={1.15}
-        spaceBetween={16}
-        speed={750}
-        autoplay={
-          autoplay
-            ? { delay: 3000, disableOnInteraction: false, pauseOnMouseEnter: true }
-            : false
-        }
-        coverflowEffect={{
-          rotate: 0,
-          stretch: 0,
-          depth: 140,
-          modifier: 1.6,
-          slideShadows: false,
-        }}
-        pagination={{ clickable: true, el: '.skiper49-pagination' }}
-        navigation={{ nextEl: '.skiper49-next', prevEl: '.skiper49-prev' }}
-        breakpoints={{
-          640: { slidesPerView: 1.7, spaceBetween: 22 },
-          1024: { slidesPerView: 2.4, spaceBetween: 28 },
-          1440: { slidesPerView: 2.8, spaceBetween: 32 },
-        }}
-        className="!pb-12"
-        a11y={{ enabled: true }}
-      >
-        {items.map((item) => (
-          <SwiperSlide key={item.id} className="!h-auto">
-            <Link
-              href={item.href}
-              className="group relative block aspect-[4/5] overflow-hidden rounded-[1.6rem] border border-white/70 bg-brand-lavender shadow-[0_30px_70px_-40px_rgba(28,11,96,0.5)]"
-            >
-              <Image
-                src={item.image}
-                alt={item.title}
-                fill
-                sizes="(max-width: 640px) 88vw, (max-width: 1024px) 46vw, 30vw"
-                className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]"
-              />
-              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(13,7,43,0.02)_0%,rgba(13,7,43,0.12)_45%,rgba(13,7,43,0.85)_100%)]" />
-              <div className="absolute inset-x-0 top-0 flex items-start justify-between p-4">
-                <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1.5 font-mono text-[8px] uppercase tracking-[0.18em] text-white backdrop-blur-md">
-                  {item.subtitle ?? 'Studio piece'}
-                </span>
-                <span className="flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white backdrop-blur-md transition-transform duration-300 group-hover:rotate-45">
-                  <ArrowUpRight className="h-3.5 w-3.5" />
-                </span>
-              </div>
-              <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
-                <h3 className="font-display text-[clamp(1.6rem,4vw,2.4rem)] leading-[0.95] tracking-[-0.02em] text-white">
-                  {item.title}
-                </h3>
-                {item.meta && (
-                  <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.18em] text-white/65">
-                    {item.meta}
-                  </p>
-                )}
-              </div>
-            </Link>
-          </SwiperSlide>
-        ))}
-      </Swiper>
-
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex items-center justify-between">
-        <div className="skiper49-pagination !static !flex !w-auto items-center gap-1.5" />
-        <div className="pointer-events-auto flex items-center gap-2">
-          <button
-            type="button"
-            aria-label="Previous design"
-            onClick={() => swiperRef.current?.slidePrev()}
-            className="skiper49-prev flex h-9 w-9 items-center justify-center rounded-full border border-brand-primary/15 bg-white text-brand-primary transition-colors hover:border-brand-primary hover:bg-brand-primary hover:text-white"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            aria-label="Next design"
-            onClick={() => swiperRef.current?.slideNext()}
-            className="skiper49-next flex h-9 w-9 items-center justify-center rounded-full border border-brand-primary/15 bg-white text-brand-primary transition-colors hover:border-brand-primary hover:bg-brand-primary hover:text-white"
-          >
-            <ArrowRight className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
+    <div className={cn("flex h-full w-full items-center justify-center overflow-hidden bg-transparent", className)}>
+      <Carousel_003 className="" images={images} showPagination showNavigation loop autoplay />
     </div>
   );
-}
+};
+
+export { Skiper49 };
+
+const Carousel_003 = ({
+  images,
+  className,
+  showPagination = false,
+  showNavigation = false,
+  loop = true,
+  autoplay = false,
+  spaceBetween = 0,
+}: {
+  images: { src: string; alt: string; title?: string; category?: string }[];
+  className?: string;
+  showPagination?: boolean;
+  showNavigation?: boolean;
+  loop?: boolean;
+  autoplay?: boolean;
+  spaceBetween?: number;
+}) => {
+  const css = `
+  .Carousal_003 {
+    width: 100%;
+    height: 360px;
+    padding-bottom: 50px !important;
+  }
+  
+  .Carousal_003 .swiper-slide {
+    background-position: center;
+    background-size: cover;
+    width: 300px;
+    height: 300px;
+    border-radius: 1.4rem;
+    overflow: hidden;
+    box-shadow: 0 20px 45px -15px rgba(28, 11, 96, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    background-color: #fff;
+  }
+
+  @media (max-width: 480px) {
+    .Carousal_003 {
+      height: 310px;
+      padding-bottom: 40px !important;
+    }
+    .Carousal_003 .swiper-slide {
+      width: 250px;
+      height: 250px;
+      border-radius: 1.1rem;
+    }
+  }
+
+  .Carousal_003 .swiper-pagination-bullet {
+    background-color: #1c0b60 !important;
+    opacity: 0.3;
+    transition: all 0.3s ease;
+  }
+
+  .Carousal_003 .swiper-pagination-bullet-active {
+    background-color: #e71e64 !important;
+    opacity: 1;
+    width: 22px;
+    border-radius: 9999px;
+  }
+
+  .Carousal_003 .swiper-button-next,
+  .Carousal_003 .swiper-button-prev {
+    width: 38px;
+    height: 38px;
+    border-radius: 9999px;
+    background: rgba(28, 11, 96, 0.75);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: all 0.25s ease;
+  }
+
+  .Carousal_003 .swiper-button-next:hover,
+  .Carousal_003 .swiper-button-prev:hover {
+    background: #1c0b60;
+    transform: scale(1.08);
+  }
+`;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, translateY: 20 }}
+      animate={{ opacity: 1, translateY: 0 }}
+      transition={{
+        duration: 0.3,
+        delay: 0.2,
+      }}
+      className={cn("relative w-full max-w-full lg:max-w-4xl px-2 sm:px-5 overflow-hidden", className)}
+    >
+      <style>{css}</style>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="w-full"
+      >
+        <Swiper
+          spaceBetween={spaceBetween}
+          autoplay={
+            autoplay
+              ? {
+                  delay: 2500,
+                  disableOnInteraction: false,
+                  pauseOnMouseEnter: true,
+                }
+              : false
+          }
+          effect="coverflow"
+          grabCursor={true}
+          slidesPerView="auto"
+          centeredSlides={true}
+          loop={loop}
+          coverflowEffect={{
+            rotate: 40,
+            stretch: 0,
+            depth: 100,
+            modifier: 1,
+            slideShadows: true,
+          }}
+          pagination={
+            showPagination
+              ? {
+                  clickable: true,
+                }
+              : false
+          }
+          navigation={
+            showNavigation
+              ? {
+                  nextEl: ".swiper-button-next",
+                  prevEl: ".swiper-button-prev",
+                }
+              : false
+          }
+          className="Carousal_003"
+          modules={[EffectCoverflow, Autoplay, Pagination, Navigation]}
+        >
+          {images.map((image, index) => (
+            <SwiperSlide key={index} className="group relative">
+              <img
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                src={image.src}
+                alt={image.alt}
+              />
+              {/* Slight dark gradient from the bottom of the image */}
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+              
+              {/* Label with type */}
+              <div className="absolute inset-x-0 bottom-0 p-3.5 z-10 text-white text-left pointer-events-none">
+                {image.category && (
+                  <span className="block text-[9px] font-bold uppercase tracking-[0.16em] text-brand-gold drop-shadow-xs mb-0.5">
+                    {image.category}
+                  </span>
+                )}
+                <p className="font-heading text-sm sm:text-base font-extrabold uppercase leading-tight tracking-tight text-white drop-shadow-md">
+                  {image.title || image.alt}
+                </p>
+              </div>
+            </SwiperSlide>
+          ))}
+          {showNavigation && (
+            <div>
+              <div className="swiper-button-next after:hidden">
+                <ChevronRightIcon className="h-5 w-5 text-white" />
+              </div>
+              <div className="swiper-button-prev after:hidden">
+                <ChevronLeftIcon className="h-5 w-5 text-white" />
+              </div>
+            </div>
+          )}
+        </Swiper>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+export { Carousel_003 };
+export default Skiper49;

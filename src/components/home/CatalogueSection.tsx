@@ -22,12 +22,14 @@ export default function CatalogueSection() {
   }));
 
   return (
-    <section id="catalogue" className="relative overflow-hidden py-18 sm:py-22 lg:py-26">
-      <div className="pointer-events-none absolute inset-0 brand-gradient-soft opacity-60" />
-      <div className="pointer-events-none absolute -left-32 top-24 h-72 w-72 rounded-full bg-brand-pink/10 blur-3xl" />
-      <div className="pointer-events-none absolute -right-24 bottom-10 h-80 w-80 rounded-full bg-brand-teal/10 blur-3xl" />
+    <section id="catalogue" className="relative z-10 w-full max-w-full flex flex-col justify-center py-10 sm:py-14 lg:h-[100svh] lg:min-h-[100svh] lg:max-h-[100svh] lg:py-12 overflow-hidden" style={{ scrollMarginTop: '80px' }}>
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+        <div className="absolute inset-0 brand-gradient-soft opacity-60" />
+        <div className="absolute -left-32 top-24 h-72 w-72 rounded-full bg-brand-pink/10 blur-3xl" />
+        <div className="absolute -right-24 bottom-10 h-80 w-80 rounded-full bg-brand-teal/10 blur-3xl" />
+      </div>
 
-      <div className="relative mx-auto max-w-[92rem] px-4 sm:px-6 lg:px-10">
+      <div className="relative mx-auto w-full max-w-[92rem] px-4 sm:px-6 lg:px-10">
         <Reveal>
           <SectionHeading
             eyebrow="The Collection"
@@ -38,26 +40,26 @@ export default function CatalogueSection() {
                 <span className="text-brand-pink">Built In.</span>
               </>
             }
-            description="A curated showcase of precision 3D-printed gifts, bespoke keepsakes, and sculptural pieces. Every single design can be personalized with custom names, polymers, and color palettes."
+            description="A curated showcase of precision 3D-printed gifts, bespoke keepsakes, and sculptural pieces. Every single design can be personalized."
             action={
               <Link
                 href="/catalogue"
-                className="group inline-flex items-center gap-3 rounded-full border border-brand-primary/15 bg-white/80 px-6 py-3.5 font-sans text-[11px] font-bold uppercase tracking-[0.16em] text-brand-primary backdrop-blur transition-all hover:-translate-y-0.5 hover:border-brand-primary hover:bg-brand-primary hover:text-white"
+                className="group inline-flex items-center gap-2.5 rounded-full border border-brand-primary/15 bg-white/80 px-4 py-2.5 font-sans text-[11px] font-bold uppercase tracking-[0.14em] text-brand-primary backdrop-blur transition-all hover:-translate-y-0.5 hover:border-brand-primary hover:bg-brand-primary hover:text-white"
               >
-                Full Catalogue
+                <span>Full Catalogue</span>
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
             }
           />
         </Reveal>
 
-        <Reveal delay={0.1} className="mt-10 sm:mt-12">
-          <Skiper49 items={slides} />
+        <Reveal delay={0.1} className="mt-6 sm:mt-8 flex justify-center">
+          <Skiper49 />
         </Reveal>
 
-        <Reveal delay={0.15} className="mt-8">
-          <div className="flex flex-wrap items-center gap-2 border-t border-brand-primary/10 pt-6">
-            <span className="mr-2 font-sans text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-primary/50">
+        <Reveal delay={0.15} className="mt-5">
+          <div className="flex flex-wrap items-center gap-2 border-t border-brand-primary/10 pt-4">
+            <span className="mr-2 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-brand-primary/50">
               Browse By Category:
             </span>
             {PRODUCT_CATEGORIES.map((category) => (

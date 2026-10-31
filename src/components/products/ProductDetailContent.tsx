@@ -18,6 +18,7 @@ import {
   ShoppingBag,
   Sparkles,
   Star,
+  Truck,
 } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import {
@@ -38,9 +39,9 @@ import Reveal from '@/components/ui/Reveal';
 type TabKey = 'details' | 'specs' | 'delivery';
 
 const tabs: Array<{ id: TabKey; label: string }> = [
-  { id: 'details', label: 'The piece' },
+  { id: 'details', label: 'The Piece' },
   { id: 'specs', label: 'Specifications' },
-  { id: 'delivery', label: 'Delivery & care' },
+  { id: 'delivery', label: 'Delivery & Care' },
 ];
 
 let cartIdSequence = 0;
@@ -72,17 +73,17 @@ export default function ProductDetailContent({ slug }: { slug: string }) {
         <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-lavender text-brand-primary">
           <Package className="h-6 w-6" />
         </span>
-        <h1 className="mt-5 font-display text-4xl leading-none tracking-[-0.03em] text-brand-navy">
-          Piece not found.
+        <h1 className="mt-5 font-heading text-3xl font-extrabold uppercase tracking-tight text-brand-navy">
+          Piece Not Found.
         </h1>
-        <p className="mt-3 max-w-sm text-sm text-brand-navy/50">
+        <p className="mt-2 max-w-sm font-sans text-sm text-brand-navy/60">
           The design may have moved. Browse the catalogue to find something similar.
         </p>
         <Link
           href="/catalogue"
-          className="mt-6 rounded-full bg-brand-primary px-5 py-3 font-mono text-[9px] uppercase tracking-[0.14em] text-white transition-colors hover:bg-brand-pink"
+          className="mt-5 rounded-full bg-brand-primary px-6 py-3 font-sans text-xs font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-brand-pink"
         >
-          Back to catalogue
+          Back To Catalogue
         </Link>
       </div>
     );
@@ -123,8 +124,9 @@ export default function ProductDetailContent({ slug }: { slug: string }) {
 
   return (
     <div className="w-full bg-brand-offwhite">
-      <div className="mx-auto max-w-[92rem] px-4 pb-16 pt-6 sm:px-6 sm:pt-8 lg:px-10">
-        <nav className="flex items-center gap-2 font-mono text-[8px] uppercase tracking-[0.16em] text-brand-primary/40">
+      <div className="mx-auto max-w-[92rem] px-4 pb-20 pt-6 sm:px-6 sm:pt-8 lg:px-10">
+        {/* Breadcrumb Navigation */}
+        <nav className="flex items-center gap-2 font-sans text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-navy/50">
           <Link href="/" className="transition-colors hover:text-brand-primary">
             Home
           </Link>
@@ -133,14 +135,15 @@ export default function ProductDetailContent({ slug }: { slug: string }) {
             Catalogue
           </Link>
           <ChevronRight className="h-3 w-3" />
-          <span className="truncate text-brand-primary/65">{product.name}</span>
+          <span className="truncate text-brand-primary font-bold">{product.name}</span>
         </nav>
 
-        <div className="mt-6 grid gap-8 lg:grid-cols-[1.02fr_0.98fr] lg:gap-12">
+        <div className="mt-6 grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12">
+          {/* Left Column: Visual Showcase (3D Viewer / High-Res Photos) */}
           <Reveal>
             <div className="lg:sticky lg:top-28">
-              <div className="relative overflow-hidden rounded-[1.8rem] border border-brand-primary/10 bg-white p-2 shadow-[0_30px_80px_-52px_rgba(28,11,96,0.4)]">
-                <div className="relative aspect-square overflow-hidden rounded-[1.4rem] bg-brand-lavender">
+              <div className="relative overflow-hidden rounded-[2rem] border border-brand-primary/10 bg-white p-2.5 shadow-[0_30px_80px_-50px_rgba(28,11,96,0.35)]">
+                <div className="relative aspect-square overflow-hidden rounded-[1.6rem] bg-brand-lavender/40">
                   <AnimatePresence mode="wait">
                     {show3D ? (
                       <motion.div
@@ -162,7 +165,7 @@ export default function ProductDetailContent({ slug }: { slug: string }) {
                         initial={{ opacity: 0, scale: 1.02 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 0.35 }}
+                        transition={{ duration: 0.3 }}
                         className="absolute inset-0"
                       >
                         <Image
@@ -177,35 +180,38 @@ export default function ProductDetailContent({ slug }: { slug: string }) {
                     )}
                   </AnimatePresence>
 
-                  <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-3">
-                    <span className="rounded-full border border-white/50 bg-white/80 px-2.5 py-1 font-mono text-[8px] uppercase tracking-[0.16em] text-brand-primary backdrop-blur-md">
+                  {/* Top Badges */}
+                  <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-4">
+                    <span className="rounded-full border border-white/60 bg-white/90 px-3 py-1 font-sans text-[10px] font-bold uppercase tracking-[0.14em] text-brand-primary shadow-xs backdrop-blur-md">
                       {product.category}
                     </span>
                     {product.badge && (
-                      <span className="rounded-full bg-brand-gold px-2.5 py-1 font-mono text-[8px] uppercase tracking-[0.16em] text-brand-navy">
+                      <span className="rounded-full bg-brand-gold px-3 py-1 font-sans text-[10px] font-bold uppercase tracking-[0.14em] text-brand-navy shadow-xs">
                         {product.badge}
                       </span>
                     )}
                   </div>
 
-                  <div className="absolute inset-x-0 bottom-0 flex items-center justify-between p-3">
+                  {/* Bottom Controls Toggle */}
+                  <div className="absolute inset-x-0 bottom-0 flex items-center justify-between p-4">
                     <button
                       type="button"
                       onClick={() => setShow3D((value) => !value)}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-white/50 bg-white/85 px-3 py-2 font-mono text-[8px] uppercase tracking-[0.14em] text-brand-primary backdrop-blur-md transition-colors hover:bg-white"
+                      className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/90 px-4 py-2 font-sans text-[10px] font-bold uppercase tracking-[0.14em] text-brand-primary shadow-xs backdrop-blur-md transition-colors hover:bg-white"
                     >
-                      <RotateCcw className="h-3 w-3" />
-                      {show3D ? 'Photo view' : 'View in 3D'}
+                      <RotateCcw className="h-3.5 w-3.5" />
+                      <span>{show3D ? 'Photo View' : 'Live 3D View'}</span>
                     </button>
-                    <span className="rounded-full border border-white/40 bg-brand-primary/80 px-2.5 py-1.5 font-mono text-[8px] uppercase tracking-[0.14em] text-white backdrop-blur-md">
+                    <span className="rounded-full border border-white/40 bg-brand-primary/85 px-3 py-1.5 font-sans text-[10px] font-bold uppercase tracking-[0.12em] text-white shadow-xs backdrop-blur-md">
                       {product.dimensionsMm.x} × {product.dimensionsMm.y} × {product.dimensionsMm.z} mm
                     </span>
                   </div>
                 </div>
               </div>
 
+              {/* Thumbnails */}
               {gallery.length > 1 && (
-                <div className="mt-3 flex gap-2">
+                <div className="mt-3 flex gap-2.5">
                   {gallery.map((image, index) => (
                     <button
                       key={`${image}-${index}`}
@@ -214,233 +220,219 @@ export default function ProductDetailContent({ slug }: { slug: string }) {
                         setActiveImage(index);
                         setShow3D(false);
                       }}
-                      className={`relative h-16 w-16 overflow-hidden rounded-xl border-2 transition-all ${
+                      className={`relative h-18 w-18 overflow-hidden rounded-2xl border-2 transition-all ${
                         !show3D && activeImage === index
-                          ? 'border-brand-primary'
-                          : 'border-transparent opacity-60 hover:opacity-100'
+                          ? 'border-brand-primary shadow-xs scale-105'
+                          : 'border-transparent opacity-65 hover:opacity-100'
                       }`}
                       aria-label={`View image ${index + 1}`}
                     >
-                      <Image src={image} alt="" fill sizes="64px" className="object-cover" />
+                      <Image src={image} alt="" fill sizes="72px" className="object-cover" />
                     </button>
                   ))}
                   <button
                     type="button"
                     onClick={() => setShow3D(true)}
-                    className={`flex h-16 w-16 flex-col items-center justify-center gap-1 rounded-xl border-2 font-mono text-[7px] uppercase tracking-[0.1em] transition-all ${
+                    className={`flex h-18 w-18 flex-col items-center justify-center gap-1 rounded-2xl border-2 font-sans text-[9px] font-bold uppercase tracking-[0.1em] transition-all ${
                       show3D
-                        ? 'border-brand-primary bg-brand-primary text-white'
-                        : 'border-brand-primary/10 bg-white text-brand-primary/50 hover:border-brand-primary/30'
+                        ? 'border-brand-primary bg-brand-primary text-white shadow-xs'
+                        : 'border-brand-primary/15 bg-white text-brand-primary/60 hover:border-brand-primary/30'
                     }`}
                   >
                     <RotateCcw className="h-4 w-4" />
-                    3D
+                    <span>3D</span>
                   </button>
                 </div>
               )}
-
-              <p className="mt-3 px-1 font-mono text-[7px] uppercase leading-relaxed tracking-[0.12em] text-brand-navy/35">
-                3D preview and photos are indicative. Final finish may vary slightly; the studio confirms
-                every detail before printing.
-              </p>
             </div>
           </Reveal>
 
+          {/* Right Column: Details, Pricing & Order Customization */}
           <Reveal delay={0.08}>
             <div className="flex flex-col">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-brand-lavender px-3 py-1.5 font-mono text-[8px] uppercase tracking-[0.16em] text-brand-primary">
-                  {product.customizable ? 'Made to order' : 'Ready to ship'}
+                <span className="rounded-full bg-brand-lavender px-3 py-1 font-sans text-[10px] font-bold uppercase tracking-[0.14em] text-brand-primary">
+                  {product.customizable ? 'Made To Order' : 'Ready To Ship'}
                 </span>
-                <span className="flex items-center gap-1 rounded-full border border-brand-primary/10 bg-white px-2.5 py-1.5 font-mono text-[8px] text-brand-primary/60">
-                  <Star className="h-3 w-3 fill-brand-gold text-brand-gold" />
+                <span className="flex items-center gap-1 rounded-full border border-brand-primary/10 bg-white px-2.5 py-1 font-sans text-[11px] font-medium text-brand-navy/70">
+                  <Star className="h-3.5 w-3.5 fill-brand-gold text-brand-gold" />
                   {rating.toFixed(1)} · {reviews} reviews
                 </span>
-                <span className="flex items-center gap-1 rounded-full border border-brand-teal/20 bg-brand-mint px-2.5 py-1.5 font-mono text-[8px] uppercase tracking-[0.12em] text-brand-pine">
+                <span className="flex items-center gap-1.5 rounded-full border border-brand-teal/20 bg-brand-mint px-2.5 py-1 font-sans text-[10px] font-bold uppercase tracking-[0.12em] text-brand-pine">
                   <span className="h-1.5 w-1.5 rounded-full bg-brand-teal" />
-                  In stock
+                  Studio Verified
                 </span>
               </div>
 
-              <h1 className="mt-4 font-display text-[clamp(2.6rem,6vw,4.6rem)] leading-[0.88] tracking-[-0.04em] text-brand-navy">
+              <h1 className="mt-3 font-heading text-[clamp(2.2rem,5vw,3.6rem)] font-extrabold uppercase leading-[0.96] tracking-tight text-brand-navy">
                 {product.name}
               </h1>
-              <p className="mt-4 max-w-xl text-sm leading-relaxed text-brand-navy/60">
+
+              <p className="mt-3 max-w-xl font-sans text-sm leading-relaxed text-brand-navy/70">
                 {product.description}
               </p>
 
-              <div className="mt-5 flex flex-wrap gap-1.5">
-                {product.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full border border-brand-primary/10 bg-white px-2.5 py-1 font-mono text-[8px] uppercase tracking-[0.12em] text-brand-navy/50"
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-
-              <div className="mt-6 rounded-2xl border border-brand-primary/10 bg-white p-4 sm:p-5">
+              {/* Price & Lead Time Banner */}
+              <div className="mt-6 rounded-2xl border border-brand-primary/10 bg-white p-5 shadow-xs">
                 <div className="flex flex-wrap items-end justify-between gap-3">
                   <div>
-                    <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-brand-primary/40">
-                      {product.customizable ? 'From' : 'Price'}
+                    <span className="font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-brand-navy/50">
+                      {product.customizable ? 'Starting From' : 'Unit Price'}
                     </span>
                     <div className="mt-1 flex items-baseline gap-2">
-                      <span className="font-display text-[2.6rem] leading-none tracking-[-0.03em] text-brand-navy">
+                      <span className="font-heading text-[2.6rem] font-extrabold uppercase leading-none tracking-tight text-brand-navy">
                         {formatINR(product.startingPrice)}
                       </span>
                       {product.customizable && (
-                        <span className="font-mono text-[8px] uppercase tracking-[0.12em] text-brand-primary/40">
-                          base · {formatINR(defaultPrice)} configured
+                        <span className="font-sans text-[11px] text-brand-navy/50">
+                          base · {formatINR(defaultPrice)} as previewed
                         </span>
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.12em] text-brand-navy/45">
-                    <Clock className="h-3.5 w-3.5 text-brand-pink" />
-                    {product.productionDays ?? 3}–{(product.productionDays ?? 3) + 2} working days
+
+                  <div className="flex items-center gap-1.5 font-sans text-xs font-semibold text-brand-navy/70">
+                    <Clock className="h-4 w-4 text-brand-pink" />
+                    <span>{product.productionDays ?? 3}–{(product.productionDays ?? 3) + 2} working days lead</span>
                   </div>
                 </div>
 
-                <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                  <Link
-                    href={getCustomizeHref(product)}
-                    className="group flex flex-1 items-center justify-between gap-3 rounded-full bg-brand-primary px-5 py-3.5 font-mono text-[10px] uppercase tracking-[0.14em] text-white transition-all hover:-translate-y-0.5 hover:bg-brand-pink"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Sparkles className="h-4 w-4" />
-                      Customize this piece
-                    </span>
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </Link>
+                {/* Primary Action Buttons */}
+                <div className="mt-5 flex flex-col gap-2.5 sm:flex-row">
+                  {product.customizable && (
+                    <Link
+                      href={getCustomizeHref(product)}
+                      className="group flex flex-1 items-center justify-between gap-3 rounded-full bg-brand-primary px-6 py-4 font-sans text-[11px] font-bold uppercase tracking-[0.14em] text-white shadow-md transition-all hover:-translate-y-0.5 hover:bg-brand-pink"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-brand-gold" />
+                        Customize In 3D Live Studio
+                      </span>
+                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </Link>
+                  )}
+
                   <button
                     type="button"
                     onClick={handleAddToCart}
-                    className={`flex items-center justify-center gap-2 rounded-full border px-5 py-3.5 font-mono text-[10px] uppercase tracking-[0.14em] transition-all ${
+                    className={`flex items-center justify-center gap-2 rounded-full border px-6 py-4 font-sans text-[11px] font-bold uppercase tracking-[0.14em] transition-all ${
                       added
-                        ? 'border-brand-teal bg-brand-mint text-brand-pine'
-                        : 'border-brand-primary/15 bg-white text-brand-primary hover:border-brand-primary/30 hover:bg-brand-lavender'
+                        ? 'border-brand-teal bg-brand-mint text-brand-pine shadow-xs'
+                        : 'border-brand-primary/20 bg-white text-brand-primary hover:border-brand-primary hover:bg-brand-lavender'
                     }`}
                   >
                     {added ? <Check className="h-4 w-4" /> : <ShoppingBag className="h-4 w-4" />}
-                    {added ? 'Added' : 'Add standard'}
+                    <span>{added ? 'Added To Cart' : 'Add Standard Piece'}</span>
                   </button>
                 </div>
 
-                <div className="mt-4 grid grid-cols-3 gap-2 border-t border-brand-primary/10 pt-3">
+                {/* Studio Guarantee Row */}
+                <div className="mt-5 grid grid-cols-3 gap-2 border-t border-brand-primary/10 pt-3.5">
                   {[
-                    { icon: ShieldCheck, label: 'Human reviewed' },
-                    { icon: Ruler, label: '0.05 mm detail' },
-                    { icon: Heart, label: 'Gift-ready' },
+                    { icon: ShieldCheck, label: '0.05 mm Precision' },
+                    { icon: Truck, label: 'Pan-India Insured' },
+                    { icon: Heart, label: 'Gift-Ready Box' },
                   ].map((item) => {
                     const Icon = item.icon;
                     return (
-                      <div key={item.label} className="flex items-center gap-1.5 font-mono text-[7px] uppercase tracking-[0.12em] text-brand-navy/45">
+                      <div key={item.label} className="flex items-center gap-1.5 font-sans text-[10px] font-semibold text-brand-navy/60">
                         <Icon className="h-3.5 w-3.5 text-brand-teal" />
-                        {item.label}
+                        <span>{item.label}</span>
                       </div>
                     );
                   })}
                 </div>
               </div>
 
-              <div className="mt-5 rounded-2xl border border-brand-primary/10 bg-white">
+              {/* Tabs Section */}
+              <div className="mt-6 rounded-2xl border border-brand-primary/10 bg-white shadow-xs">
                 <div className="flex gap-1 border-b border-brand-primary/10 p-1.5">
                   {tabs.map((item) => (
                     <button
                       key={item.id}
                       type="button"
                       onClick={() => setTab(item.id)}
-                      className={`flex-1 rounded-full px-3 py-2 font-mono text-[8px] uppercase tracking-[0.13em] transition-colors ${
+                      className={`flex-1 rounded-xl px-3 py-2.5 font-sans text-[11px] font-bold uppercase tracking-[0.12em] transition-all ${
                         tab === item.id
-                          ? 'bg-brand-primary text-white'
-                          : 'text-brand-navy/45 hover:bg-brand-lavender hover:text-brand-primary'
+                          ? 'bg-brand-primary text-white shadow-xs'
+                          : 'text-brand-navy/60 hover:bg-brand-lavender hover:text-brand-primary'
                       }`}
                     >
                       {item.label}
                     </button>
                   ))}
                 </div>
-                <div className="p-4 sm:p-5">
+
+                <div className="p-5">
                   {tab === 'details' && (
                     <ul className="space-y-2.5">
                       {highlights.map((highlight) => (
-                        <li key={highlight} className="flex items-start gap-2 text-xs leading-relaxed text-brand-navy/60">
-                          <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-teal" />
-                          {highlight}
+                        <li key={highlight} className="flex items-start gap-2.5 font-sans text-xs leading-relaxed text-brand-navy/75">
+                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-teal" />
+                          <span>{highlight}</span>
                         </li>
                       ))}
                     </ul>
                   )}
+
                   {tab === 'specs' && (
                     <dl className="grid gap-2.5 sm:grid-cols-2">
                       {specs.map((spec) => (
-                        <div key={spec.label} className="rounded-xl bg-brand-lavender/40 px-3 py-2.5">
-                          <dt className="font-mono text-[7px] uppercase tracking-[0.16em] text-brand-primary/40">
+                        <div key={spec.label} className="rounded-xl bg-brand-lavender/30 p-3">
+                          <dt className="font-sans text-[10px] font-bold uppercase tracking-[0.14em] text-brand-primary/60">
                             {spec.label}
                           </dt>
-                          <dd className="mt-1 text-xs font-medium text-brand-navy/75">{spec.value}</dd>
+                          <dd className="mt-1 font-sans text-xs font-semibold text-brand-navy">{spec.value}</dd>
                         </div>
                       ))}
                     </dl>
                   )}
+
                   {tab === 'delivery' && (
-                    <div className="space-y-3 text-xs leading-relaxed text-brand-navy/60">
+                    <div className="space-y-3 font-sans text-xs leading-relaxed text-brand-navy/70">
                       <p className="flex items-start gap-2">
-                        <Package className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-pink" />
-                        Gift-ready packing with protective foam. Tracked delivery across India; local
-                        Chennai slots available at checkout.
+                        <Package className="mt-0.5 h-4 w-4 shrink-0 text-brand-pink" />
+                        <span>Gift-ready insulated packing with high-density protective foam. Tracked delivery across India.</span>
                       </p>
                       <p className="flex items-start gap-2">
-                        <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-teal" />
-                        Wipe with a soft dry cloth. Keep away from prolonged direct sun and high heat.
-                        Resin pieces should not be left in a hot car.
+                        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-brand-teal" />
+                        <span>Wipe gently with a soft dry cloth. Store away from excessive direct solar radiation.</span>
                       </p>
                       <p className="flex items-start gap-2">
-                        <RotateCcw className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-primary" />
-                        Personalised items are made to order and cannot be returned for change of mind.
-                        If something arrives damaged, send a photo within 48 hours and we will make it
-                        right.
+                        <RotateCcw className="mt-0.5 h-4 w-4 shrink-0 text-brand-primary" />
+                        <span>Every piece is inspected. In case of rare transit issue, notify us within 48 hours for immediate priority reprint.</span>
                       </p>
                     </div>
                   )}
                 </div>
               </div>
-
-              <Link
-                href="/#contact"
-                className="mt-4 inline-flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.14em] text-brand-primary/50 transition-colors hover:text-brand-primary"
-              >
-                Ask the studio about this piece
-                <ArrowUpRight className="h-3.5 w-3.5" />
-              </Link>
             </div>
           </Reveal>
         </div>
 
+        {/* Related Creations */}
         {related.length > 0 && (
           <section className="mt-16 border-t border-brand-primary/10 pt-10 sm:mt-20">
             <div className="flex items-end justify-between gap-4">
               <div>
-                <span className="font-mono text-[8px] uppercase tracking-[0.22em] text-brand-primary/40">
-                  You may also like
+                <span className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-brand-primary/60">
+                  Recommended For You
                 </span>
-                <h2 className="mt-2 font-display text-[clamp(2rem,4.5vw,3.2rem)] leading-none tracking-[-0.03em] text-brand-navy">
-                  More from the studio
+                <h2 className="mt-1.5 font-heading text-2xl sm:text-3xl font-extrabold uppercase tracking-tight text-brand-navy">
+                  More From The Studio
                 </h2>
               </div>
               <Link
                 href="/catalogue"
-                className="hidden items-center gap-2 rounded-full border border-brand-primary/15 px-4 py-2.5 font-mono text-[8px] uppercase tracking-[0.14em] text-brand-primary transition-colors hover:bg-white sm:flex"
+                className="hidden items-center gap-2 rounded-full border border-brand-primary/20 bg-white px-4 py-2 font-sans text-xs font-bold uppercase tracking-[0.12em] text-brand-primary transition-colors hover:bg-brand-primary hover:text-white sm:flex"
               >
-                All pieces
-                <ArrowRight className="h-3.5 w-3.5" />
+                <span>View All Creations</span>
+                <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
-            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {related.map((item, index) => (
-                <Reveal key={item.id} delay={index * 0.05} y={24}>
+                <Reveal key={item.id} delay={index * 0.05} y={20}>
                   <ProductCard product={item} className="h-full" />
                 </Reveal>
               ))}

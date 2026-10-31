@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import React, { Suspense } from 'react';
-import { Instrument_Serif, Space_Grotesk, Space_Mono } from 'next/font/google';
+import { Instrument_Serif, Plus_Jakarta_Sans, Space_Grotesk, Space_Mono } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/layout/Navbar';
 import NavbarSpacer from '@/components/layout/NavbarSpacer';
@@ -27,6 +27,12 @@ const spaceMono = Space_Mono({
   subsets: ['latin'],
 });
 
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: '--font-heading',
+  weight: ['600', '700', '800'],
+  subsets: ['latin'],
+});
+
 export const metadata: Metadata = {
   title: `${BRAND.name} | Precision 3D Printing Studio`,
   description: BRAND.description,
@@ -43,14 +49,14 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${instrumentSerif.variable} ${spaceGrotesk.variable} ${spaceMono.variable} h-full antialiased`}
+      className={`${plusJakartaSans.variable} ${instrumentSerif.variable} ${spaceGrotesk.variable} ${spaceMono.variable} h-full antialiased overflow-x-hidden`}
     >
-      <body className="flex min-h-full flex-col bg-paper font-sans text-ink">
+      <body className="flex min-h-full flex-col bg-paper font-sans text-ink overflow-x-hidden w-full max-w-full relative">
         <SplashScreen />
         <Suspense fallback={<div className="h-[76px] bg-paper" />}>
           <Navbar />
         </Suspense>
-        <main className="flex flex-1 flex-col">
+        <main className="flex flex-1 flex-col overflow-x-hidden w-full max-w-full">
           <NavbarSpacer />
           <PageTransition>{children}</PageTransition>
         </main>

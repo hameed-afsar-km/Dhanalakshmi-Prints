@@ -71,15 +71,60 @@
   --color-brand-cream: var(--brand-cream);
   --color-brand-mint: var(--brand-mint);
   --font-sans: var(--font-space-grotesk), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-display: "Nechlas", var(--font-space-grotesk), sans-serif;
+  --font-heading: var(--font-heading), var(--font-space-grotesk), sans-serif;
+  --font-display: var(--font-heading), var(--font-space-grotesk), sans-serif;
   --font-mono: var(--font-space-mono);
-  --font-nechlas: "Nechlas", var(--font-space-grotesk), sans-serif;
+  --font-nechlas: "Nechlas", var(--font-heading), sans-serif;
 }
 
-h1, h2, h3, h4, .font-title {
-  font-family: var(--font-nechlas);
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+h1, h2, h3, h4, .font-heading {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+@keyframes animatedGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.footer-animated-gradient {
+  background: linear-gradient(-45deg, #070417, #1c0b60, #3d0c63, #87193b, #091a38, #1c0b60);
+  background-size: 350% 350%;
+  animation: animatedGradient 14s ease infinite;
+}
+
+.contact-animated-bg {
+  background: linear-gradient(-45deg, #08031d, #1c0b60, #3a0d5c, #0a1f42, #180838);
+  background-size: 300% 300%;
+  animation: animatedGradient 12s ease infinite;
+}
+
+.btn-gradient-loop {
+  background: linear-gradient(135deg, #e71e64, #8b2fd6, #019c87, #fed003, #e71e64);
+  background-size: 300% 300%;
+  animation: animatedGradient 4s ease infinite;
+}
+
+.btn-gradient-loop-glow {
+  background: linear-gradient(135deg, #e71e64, #8b2fd6, #019c87, #fed003, #e71e64);
+  background-size: 300% 300%;
+  animation: animatedGradient 4s ease infinite;
+  box-shadow: 0 0 25px -4px rgba(231, 30, 100, 0.55), 0 8px 20px -6px rgba(139, 47, 214, 0.45);
+}
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+  position: relative;
 }
 
 html {
