@@ -28,7 +28,7 @@ export default function CustomPrintingPage() {
 
   // Uploaded file state
   const [file, setFile] = useState<File | null>(null);
-  const [fileFormat, setFileFormat] = useState<'stl' | 'obj' | '3mf'>('stl');
+  const [fileFormat, setFileFormat] = useState<'stl' | 'obj' | 'glb' | 'gltf'>('stl');
   const [fileError, setFileError] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
 
@@ -62,8 +62,8 @@ export default function CustomPrintingPage() {
     setFileError(null);
     const extension = selectedFile.name.split('.').pop()?.toLowerCase();
 
-    if (!['stl', 'obj', '3mf'].includes(extension || '')) {
-      setFileError('Unsupported file format. Please upload an .STL, .OBJ, or .3MF 3D CAD file.');
+    if (!['stl', 'obj', 'glb', 'gltf'].includes(extension || '')) {
+      setFileError('Unsupported file format. Please upload an .STL, .OBJ, .GLB, or .GLTF 3D model.');
       return;
     }
 
@@ -73,7 +73,7 @@ export default function CustomPrintingPage() {
     }
 
     setFile(selectedFile);
-    setFileFormat(extension as 'stl' | 'obj' | '3mf');
+    setFileFormat(extension as 'stl' | 'obj' | 'glb' | 'gltf');
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -164,7 +164,7 @@ export default function CustomPrintingPage() {
             Custom 3D Model Printing & Quotation
           </h1>
           <p className="text-sm text-slate-500 mt-2 leading-relaxed">
-            Upload your CAD file (STL, OBJ, 3MF) for interactive 3D inspection. Select material and infill preferences, and our engineering team will provide a rapid manufacturing quote.
+            Upload your CAD file (STL, OBJ, GLB, GLTF) for interactive 3D inspection. Select material and infill preferences, and our engineering team will provide a rapid manufacturing quote.
           </p>
         </div>
 
@@ -234,7 +234,7 @@ export default function CustomPrintingPage() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".stl,.obj,.3mf"
+                  accept=".stl,.obj,.glb,.gltf"
                   onChange={handleFileInputChange}
                   className="hidden"
                   id="model-file-upload"
@@ -248,7 +248,7 @@ export default function CustomPrintingPage() {
                   Drag and drop your 3D CAD model here
                 </h3>
                 <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                  Supports STL, OBJ, and 3MF geometry files up to 50MB.
+                  Supports STL, OBJ, GLB, and GLTF geometry files up to 50MB.
                 </p>
 
                 <div className="mt-5 flex items-center justify-center gap-3">

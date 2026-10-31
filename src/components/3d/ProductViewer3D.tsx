@@ -36,7 +36,7 @@ export default function ProductViewer3D({ product, customization, className = ''
     // Scene
     const scene = new THREE.Scene();
     sceneRef.current = scene;
-    scene.background = new THREE.Color(0xf6f7fa);
+    scene.background = new THREE.Color(0xf8f8f7);
 
     // Camera
     const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 1000);
@@ -95,7 +95,7 @@ export default function ProductViewer3D({ product, customization, className = ''
     scene.add(shadowPlane);
 
     // Subtle floor grid
-    const gridHelper = new THREE.GridHelper(140, 28, 0x1c0b60, 0xe2e8f0);
+    const gridHelper = new THREE.GridHelper(140, 28, 0x1c0b60, 0xe7e1f5);
     gridHelper.position.y = -18.05;
     scene.add(gridHelper);
 
@@ -418,6 +418,126 @@ export default function ProductViewer3D({ product, customization, className = ''
       wireMesh.position.set(0, tagH / 2 + 13, 0);
       productGroup.add(wireMesh);
 
+    } else if (product.modelType === 'lithophane-lamp') {
+      const lampRadius = 16;
+      const lampHeight = 30;
+
+      // Lithophane shade — translucent, softly emissive panel with etched text
+      const shadeTexture = createTextCanvasTexture(
+        displayText,
+        lampRadius * 2,
+        lampHeight,
+        '#fdfaf2',
+        '#3a2b1c',
+        'MEMORY · LIGHT'
+      );
+      const shadeMaterial = new THREE.MeshPhysicalMaterial({
+        map: shadeTexture,
+        color: new THREE.Color(bodyHex),
+        emissive: new THREE.Color(textHex),
+        emissiveIntensity: 0.45,
+        roughness: 0.35,
+        metalness: 0.02,
+        transmission: 0.25,
+        transparent: true,
+        opacity: 0.96,
+        wireframe,
+      });
+
+      const shadeGeo = new THREE.CylinderGeometry(lampRadius, lampRadius * 0.92, lampHeight, 64, 1, true);
+      const shadeMesh = new THREE.Mesh(shadeGeo, shadeMaterial);
+      shadeMesh.position.y = lampHeight / 2 - 4;
+      shadeMesh.castShadow = true;
+      productGroup.add(shadeMesh);
+
+      // Warm inner glow core
+      const glowMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(textHex), transparent: true, opacity: 0.55 });
+      const glowMesh = new THREE.Mesh(new THREE.CylinderGeometry(lampRadius * 0.42, lampRadius * 0.42, lampHeight * 0.8, 24), glowMat);
+      glowMesh.position.y = lampHeight / 2 - 4;
+      productGroup.add(glowMesh);
+
+      // Base plinth
+      const plinthMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(bodyHex), roughness: 0.4, metalness: 0.15 });
+      const plinth = new THREE.Mesh(new THREE.CylinderGeometry(lampRadius * 1.12, lampRadius * 1.2, 5, 48), plinthMat);
+      plinth.position.y = -7.5;
+      plinth.castShadow = true;
+      plinth.receiveShadow = true;
+      productGroup.add(plinth);
+
+      // Top rim
+      const rimMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(textHex), metalness: 0.7, roughness: 0.25 });
+      const rim = new THREE.Mesh(new THREE.TorusGeometry(lampRadius, 0.8, 12, 64), rimMat);
+      rim.rotation.x = Math.PI / 2;
+      rim.position.y = lampHeight - 4;
+      productGroup.add(rim);
+
+    } else if (product.modelType === 'figurine') {
+      // Stylised selfie figurine bust on a personalised base
+      const skinMat = new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color(bodyHex),
+        roughness,
+        metalness,
+        clearcoat,
+        wireframe,
+      });
+
+      // Base pedestal
+      const baseMat = new THREE.MeshStandardMaterial({ color: 0x241a3d, roughness: 0.45, metalness: 0.2 });
+      const pedestal = new THREE.Mesh(new THREE.CylinderGeometry(15, 17, 4.5, 48), baseMat);
+      pedestal.position.y = -14;
+      pedestal.castShadow = true;
+      pedestal.receiveShadow = true;
+      productGroup.add(pedestal);
+
+      // Personalised nameplate on pedestal
+      const plateTexture = createTextCanvasTexture(displayText, 26, 5, '#241a3d', textHex);
+      const namePlate = new THREE.Mesh(
+        new THREE.PlaneGeometry(24, 4.4),
+        new THREE.MeshPhysicalMaterial({ map: plateTexture, roughness: 0.3, metalness: 0.2 })
+      );
+      namePlate.position.set(0, -13.6, 16.6);
+      productGroup.add(namePlate);
+
+      // Torso
+      const torso = new THREE.Mesh(new THREE.CylinderGeometry(9, 12, 16, 32), skinMat);
+      torso.position.y = -4;
+      torso.castShadow = true;
+      productGroup.add(torso);
+
+      // Shoulders
+      const shoulders = new THREE.Mesh(new THREE.SphereGeometry(12.5, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), skinMat);
+      shoulders.position.y = 2;
+      shoulders.scale.y = 0.55;
+      shoulders.castShadow = true;
+      productGroup.add(shoulders);
+
+      // Neck
+      const neck = new THREE.Mesh(new THREE.CylinderGeometry(3.6, 4.2, 5, 24), skinMat);
+      neck.position.y = 7;
+      productGroup.add(neck);
+
+      // Head
+      const head = new THREE.Mesh(new THREE.SphereGeometry(7.2, 40, 32), skinMat);
+      head.position.y = 14;
+      head.scale.set(0.92, 1.08, 0.98);
+      head.castShadow = true;
+      productGroup.add(head);
+
+      // Hair cap
+      const hairMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(textHex), roughness: 0.7, metalness: 0.05 });
+      const hair = new THREE.Mesh(new THREE.SphereGeometry(7.5, 40, 24, 0, Math.PI * 2, 0, Math.PI / 2), hairMat);
+      hair.position.y = 14.6;
+      hair.scale.set(0.98, 0.85, 1.02);
+      productGroup.add(hair);
+
+      // Display ring behind figure
+      const halo = new THREE.Mesh(
+        new THREE.TorusGeometry(17, 0.7, 12, 72),
+        new THREE.MeshStandardMaterial({ color: new THREE.Color(textHex), metalness: 0.8, roughness: 0.2 })
+      );
+      halo.position.y = 4;
+      productGroup.add(halo);
+
     } else {
       // Parametric Spiral Art Miniature
       const radius = 12;
@@ -474,68 +594,68 @@ export default function ProductViewer3D({ product, customization, className = ''
   };
 
   return (
-    <div className={`relative w-full h-full min-h-[420px] rounded-2xl overflow-hidden border border-slate-200/80 bg-gradient-to-b from-slate-50 via-slate-100/50 to-slate-200/60 shadow-inner ${className}`}>
+    <div className={`relative w-full h-full min-h-[420px] rounded-2xl overflow-hidden border border-brand-primary/10 bg-gradient-to-b from-brand-lavender/60 via-brand-offwhite to-brand-lavender/30 shadow-inner ${className}`}>
       {/* 3D Canvas Canvas Hook */}
       <div ref={containerRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
 
       {/* Loading Overlay */}
       {isLoading && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm z-10">
-          <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-700 rounded-full animate-spin mb-3" />
-          <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Generating 3D Mesh...</span>
+          <div className="w-10 h-10 border-4 border-brand-lavender border-t-brand-primary rounded-full animate-spin mb-3" />
+          <span className="text-[10px] font-mono font-semibold text-brand-primary/60 uppercase tracking-[0.16em]">Generating 3D Mesh...</span>
         </div>
       )}
 
       {/* Floating 3D Interaction Toolbar */}
-      <div className="absolute top-4 right-4 flex flex-col gap-1.5 bg-white/90 backdrop-blur-md p-1.5 rounded-xl border border-slate-200/80 shadow-lg z-10">
+      <div className="absolute top-4 right-4 flex flex-col gap-1.5 bg-white/90 backdrop-blur-md p-1.5 rounded-xl border border-brand-primary/10 shadow-lg z-10">
         <button
           onClick={handleResetCamera}
           title="Reset Camera View"
-          className="p-2 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
+          className="p-2 rounded-lg text-brand-navy/70 hover:bg-brand-lavender transition-colors"
         >
           <RefreshCw className="w-4 h-4" />
         </button>
         <button
           onClick={() => setAutoRotate(!autoRotate)}
           title={autoRotate ? 'Stop Rotation' : 'Auto Rotate'}
-          className={`p-2 rounded-lg transition-colors ${autoRotate ? 'bg-indigo-600 text-white' : 'text-slate-700 hover:bg-slate-100'}`}
+          className={`p-2 rounded-lg transition-colors ${autoRotate ? 'bg-brand-primary text-white' : 'text-brand-navy/70 hover:bg-brand-lavender'}`}
         >
           <RotateCw className="w-4 h-4" />
         </button>
         <button
           onClick={() => handleZoom(-15)}
           title="Zoom In"
-          className="p-2 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
+          className="p-2 rounded-lg text-brand-navy/70 hover:bg-brand-lavender transition-colors"
         >
           <ZoomIn className="w-4 h-4" />
         </button>
         <button
           onClick={() => handleZoom(15)}
           title="Zoom Out"
-          className="p-2 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
+          className="p-2 rounded-lg text-brand-navy/70 hover:bg-brand-lavender transition-colors"
         >
           <ZoomOut className="w-4 h-4" />
         </button>
         <button
           onClick={() => setWireframe(!wireframe)}
           title="Toggle Mesh Wireframe"
-          className={`p-2 rounded-lg transition-colors ${wireframe ? 'bg-amber-500 text-white' : 'text-slate-700 hover:bg-slate-100'}`}
+          className={`p-2 rounded-lg transition-colors ${wireframe ? 'bg-brand-gold text-brand-navy' : 'text-brand-navy/70 hover:bg-brand-lavender'}`}
         >
           <Eye className="w-4 h-4" />
         </button>
       </div>
 
       {/* Bottom Live Status Pill */}
-      <div className="absolute bottom-4 left-4 flex items-center gap-2 bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-slate-200 shadow-sm text-xs font-medium text-slate-700 pointer-events-none z-10">
-        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-        <span>Realtime 3D Engine</span>
-        <span className="text-slate-400">|</span>
-        <span className="text-indigo-900 font-semibold">{customization.material || 'Standard PLA'}</span>
+      <div className="absolute bottom-4 left-4 flex items-center gap-2 bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-brand-primary/10 shadow-sm text-[9px] font-mono uppercase tracking-[0.1em] text-brand-navy/60 pointer-events-none z-10">
+        <span className="w-1.5 h-1.5 rounded-full bg-brand-teal animate-pulse" />
+        <span>Realtime 3D</span>
+        <span className="text-brand-primary/20">|</span>
+        <span className="text-brand-primary font-semibold">{customization.material || 'PLA'}</span>
       </div>
 
       {/* Interaction Hint */}
-      <div className="absolute bottom-4 right-4 text-[11px] font-medium text-slate-500 bg-white/80 px-2.5 py-1 rounded-md backdrop-blur-sm pointer-events-none hidden sm:block">
-        Drag to rotate • Scroll to zoom
+      <div className="absolute bottom-4 right-4 text-[9px] font-mono uppercase tracking-[0.1em] text-brand-navy/40 bg-white/80 px-2.5 py-1 rounded-md backdrop-blur-sm pointer-events-none hidden sm:block">
+        Drag to rotate · Scroll to zoom
       </div>
     </div>
   );

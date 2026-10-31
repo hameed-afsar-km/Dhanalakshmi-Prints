@@ -1,174 +1,234 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { ShoppingBag, Menu, X, Sparkles, Box, Shield, FileText } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowUpRight, Menu, ShoppingBag, Sparkles, X } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import { BRAND } from '@/lib/constants';
 
+const navLinks = [
+  { label: 'Home', href: '/' },
+  { label: 'Collections', href: '/#catalogue' },
+  { label: 'Customize', href: '/#customize' },
+  { label: 'Upload File', href: '/#upload' },
+  { label: 'FAQs', href: '/#faq' },
+  { label: 'Contact', href: '/#contact' },
+];
+
+const ease = [0.22, 1, 0.36, 1] as const;
+
 export default function Navbar() {
   const pathname = usePathname();
-  const { cart, isAdminLoggedIn } = useStore();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { cart } = useStore();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileOpen]);
 
   if (pathname?.startsWith('/admin')) {
     return null;
   }
 
-  const navLinks = [
-    { label: 'Home', href: '/' },
-    { label: 'Shop Catalog', href: '/shop' },
-    { label: 'Custom Printing', href: '/custom-printing' },
-    { label: 'Track Orders', href: '/orders' },
-  ];
+  const isActive = (href: string) => {
+    if (href === '/') return pathname === '/';
+    if (href.startsWith('/#')) return pathname === '/';
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md border-b border-slate-200/80 transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          {/* Brand Logo & Title */}
-          <Link href="/" className="flex items-center gap-3.5 group">
-            <div className="relative w-12 h-12 flex-shrink-0 rounded-xl overflow-hidden bg-white p-1 border border-slate-200 shadow-sm group-hover:border-indigo-600 transition-colors">
-              <Image
-                src="/assets/logo.png"
-                alt="Dhanalakshmi Prints Official Logo"
-                fill
-                className="object-contain p-0.5"
-                priority
-              />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-lg font-bold tracking-tight text-slate-900 group-hover:text-indigo-900 transition-colors">
-                {BRAND.name}
-              </span>
-              <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">
-                Precision 3D Studio
-              </span>
-            </div>
-          </Link>
+    <header className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center px-3 pt-3 sm:px-4 sm:pt-4 lg:px-5 lg:pt-4">
+      <motion.div
+        layout
+        transition={{ duration: 0.45, ease }}
+        className={`pointer-events-auto flex w-full items-center justify-between gap-3 rounded-full border border-white/70 bg-white/80 px-3 py-2 shadow-[0_18px_50px_-28px_rgba(28,11,96,0.42)] backdrop-blur-xl backdrop-saturate-150 transition-[max-width,padding,box-shadow] duration-500 sm:px-5 ${
+          scrolled
+            ? 'max-w-[1600px] shadow-[0_24px_70px_-34px_rgba(28,11,96,0.55)]'
+            : 'max-w-[1100px]'
+        }`}
+      >
+        <Link
+          href="/"
+          className="group flex shrink-0 items-center gap-2.5"
+          aria-label={`${BRAND.name} home`}
+          onClick={() => setMobileOpen(false)}
+        >
+          <span className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-brand-primary/10 bg-white shadow-sm transition-transform duration-300 group-hover:-rotate-6 sm:h-10 sm:w-10">
+            <Image
+              src="/assets/logo.png"
+              alt={`${BRAND.name} logo`}
+              fill
+              sizes="40px"
+              className="object-contain p-1"
+              priority
+            />
+          </span>
+          <span className="flex flex-col leading-none">
+            <span className="font-nechlas text-[19px] uppercase leading-none tracking-[0.02em] text-brand-navy sm:text-[21px]">
+              Dhanalakshmi
+            </span>
+            <span className="mt-1 font-sans text-[8px] font-semibold uppercase tracking-[0.22em] text-brand-primary/60">
+              Prints / 3D Studio
+            </span>
+          </span>
+        </Link>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1 lg:gap-2">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href));
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${
-                    isActive
-                      ? 'text-indigo-950 bg-indigo-50/80 font-semibold shadow-xs'
-                      : 'text-slate-600 hover:text-slate-950 hover:bg-slate-50'
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-
-            {/* Admin Dashboard Quick Link */}
-            <Link
-              href="/admin"
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                pathname.startsWith('/admin')
-                  ? 'bg-indigo-900 text-white'
-                  : 'text-slate-500 hover:text-indigo-900 hover:bg-slate-100'
-              }`}
-            >
-              <Shield className="w-3.5 h-3.5" />
-              Admin Portal
-            </Link>
-          </nav>
-
-          {/* Right Action Items: Cart + Primary CTA */}
-          <div className="hidden sm:flex items-center gap-3.5">
-            <Link
-              href="/cart"
-              className="relative p-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all"
-              aria-label="View Shopping Cart"
-            >
-              <ShoppingBag className="w-5 h-5 text-slate-800" />
-              {totalCartCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-5 h-5 px-1.5 text-xs font-bold text-white bg-pink-600 rounded-full shadow-sm animate-in zoom-in-75">
-                  {totalCartCount}
-                </span>
-              )}
-            </Link>
-
-            <Link
-              href="/customize/prod-1"
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#1c0b60] hover:bg-[#28137e] shadow-md shadow-indigo-950/15 hover:shadow-indigo-950/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
-            >
-              <Sparkles className="w-4 h-4 text-amber-300" />
-              <span>Design Your Own</span>
-            </Link>
-          </div>
-
-          {/* Mobile Menu & Cart Icon */}
-          <div className="flex md:hidden items-center gap-2">
-            <Link
-              href="/cart"
-              className="relative p-2 rounded-lg text-slate-700 hover:bg-slate-100"
-              aria-label="View Shopping Cart"
-            >
-              <ShoppingBag className="w-5 h-5" />
-              {totalCartCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-pink-600 rounded-full">
-                  {totalCartCount}
-                </span>
-              )}
-            </Link>
-
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg text-slate-700 hover:bg-slate-100 focus:outline-none"
-              aria-label="Toggle navigation menu"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Drawer Menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden border-b border-slate-200 bg-white px-4 pt-3 pb-6 space-y-2 shadow-xl animate-in slide-in-from-top-4">
+        <nav className="hidden items-center gap-1 lg:flex" aria-label="Primary navigation">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              onClick={() => setMobileMenuOpen(false)}
-              className={`block px-3 py-2.5 rounded-lg text-base font-medium ${
-                pathname === link.href ? 'bg-indigo-50 text-indigo-950 font-semibold' : 'text-slate-700 hover:bg-slate-50'
+              className={`relative rounded-full px-3.5 py-2 font-sans text-[11px] font-medium tracking-[0.02em] transition-colors ${
+                isActive(link.href)
+                  ? 'bg-brand-primary font-semibold text-white'
+                  : 'text-brand-navy/70 hover:bg-brand-lavender hover:text-brand-primary'
               }`}
             >
               {link.label}
             </Link>
           ))}
+        </nav>
+
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <Link
-            href="/admin"
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-100"
+            href="/cart"
+            className="relative flex h-9 w-9 items-center justify-center rounded-full border border-brand-primary/10 bg-white text-brand-primary transition-colors hover:border-brand-primary/30 hover:bg-brand-lavender"
+            aria-label={`View shopping cart, ${totalCartCount} items`}
           >
-            <Shield className="w-4 h-4 text-indigo-700" />
-            Admin Dashboard
+            <ShoppingBag className="h-[16px] w-[16px]" />
+            {totalCartCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-pink px-1 text-[9px] font-bold text-white ring-2 ring-white">
+                {totalCartCount}
+              </span>
+            )}
           </Link>
-          <div className="pt-2">
-            <Link
-              href="/customize/prod-1"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl font-semibold text-white bg-[#1c0b60]"
-            >
-              <Sparkles className="w-4 h-4 text-amber-300" />
-              Design Your Own 3D Product
-            </Link>
-          </div>
+
+          <Link
+            href="/#customize"
+            className="group hidden items-center gap-1.5 rounded-full bg-brand-primary px-4 py-2.5 font-sans text-[10px] font-bold uppercase tracking-[0.14em] text-white shadow-[0_12px_28px_-16px_rgba(28,11,96,0.7)] transition-all hover:-translate-y-0.5 hover:bg-brand-pink sm:flex"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-brand-gold" />
+            Customize Now
+          </Link>
+          <Link
+            href="/catalogue"
+            className="group hidden items-center gap-1.5 rounded-full border border-brand-primary/20 bg-white/70 px-4 py-2.5 font-sans text-[10px] font-bold uppercase tracking-[0.14em] text-brand-primary transition-all hover:-translate-y-0.5 hover:border-brand-primary/40 hover:bg-brand-gold md:flex"
+          >
+            Explore Designs
+            <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </Link>
+
+          <button
+            type="button"
+            onClick={() => setMobileOpen((open) => !open)}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-brand-primary/10 bg-white text-brand-primary transition-colors hover:border-brand-primary/30 hover:bg-brand-lavender lg:hidden"
+            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileOpen}
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
-      )}
+      </motion.div>
+
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="pointer-events-auto fixed inset-0 z-40 overflow-y-auto bg-brand-primary px-5 pb-10 pt-24 text-white lg:hidden"
+          >
+            <div className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(255,255,255,0.5)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.5)_1px,transparent_1px)] [background-size:48px_48px]" />
+            <div className="pointer-events-none absolute -right-24 top-24 h-72 w-72 rounded-full bg-brand-pink/30 blur-3xl" />
+            <div className="pointer-events-none absolute -left-20 bottom-10 h-72 w-72 rounded-full bg-brand-teal/20 blur-3xl" />
+
+            <div className="relative mx-auto flex max-w-2xl flex-col">
+              <span className="font-sans text-[10px] font-semibold uppercase tracking-[0.24em] text-white/50">
+                Studio Index
+              </span>
+              <nav className="mt-3 border-t border-white/15" aria-label="Mobile navigation">
+                {navLinks.map((link, index) => (
+                  <motion.div
+                    key={link.href}
+                    initial={{ opacity: 0, x: -18 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.35, delay: 0.05 + index * 0.05 }}
+                  >
+                    <Link
+                      href={link.href}
+                      onClick={() => setMobileOpen(false)}
+                      className="group flex items-center justify-between gap-4 border-b border-white/15 py-4"
+                    >
+                      <span className="flex items-baseline gap-3">
+                        <span className="font-sans text-[11px] font-semibold text-brand-gold">
+                          {String(index + 1).padStart(2, '0')}
+                        </span>
+                        <span
+                          className={`font-nechlas text-[clamp(1.8rem,7vw,2.8rem)] uppercase leading-none tracking-[0.02em] transition-colors ${
+                            isActive(link.href) ? 'text-brand-gold' : 'text-white'
+                          }`}
+                        >
+                          {link.label}
+                        </span>
+                      </span>
+                      <ArrowUpRight className="h-5 w-5 text-white/35 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:text-white" />
+                    </Link>
+                  </motion.div>
+                ))}
+              </nav>
+
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.3 }}
+                className="mt-8 flex flex-col gap-3"
+              >
+                <Link
+                  href="/#customize"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center justify-between rounded-full bg-brand-gold px-5 py-4 font-sans text-[11px] font-bold uppercase tracking-[0.16em] text-brand-navy"
+                >
+                  Customize now
+                  <Sparkles className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="/catalogue"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center justify-between rounded-full border border-white/25 px-5 py-4 font-sans text-[11px] font-bold uppercase tracking-[0.16em] text-white/85"
+                >
+                  Explore designs
+                  <ArrowUpRight className="h-4 w-4" />
+                </Link>
+                <div className="mt-4 flex flex-col gap-2 font-sans text-[11px] text-white/50">
+                  <a href={`mailto:${BRAND.supportEmail}`} className="transition-colors hover:text-white">
+                    {BRAND.supportEmail}
+                  </a>
+                  <span>{BRAND.location}</span>
+                  <span>Mon — Sat / 9:00 AM — 8:00 PM</span>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }

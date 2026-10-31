@@ -5,12 +5,13 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
-import { RotateCw, ZoomIn, ZoomOut, RefreshCw, Eye, Box, Layers, Maximize2 } from 'lucide-react';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { RotateCw, RefreshCw, Eye, Box, Layers } from 'lucide-react';
 
 interface ModelUploadViewer3DProps {
   fileData?: File | null;
   fileUrl?: string;
-  fileFormat?: 'stl' | 'obj' | '3mf';
+  fileFormat?: 'stl' | 'obj' | 'glb' | 'gltf';
   filamentColor?: string;
   materialType?: string;
   onGeometryComputed?: (info: {
@@ -58,7 +59,7 @@ export default function ModelUploadViewer3D({
 
     const scene = new THREE.Scene();
     sceneRef.current = scene;
-    scene.background = new THREE.Color(0xf1f5f9);
+    scene.background = new THREE.Color(0xf8f8f7);
 
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
     camera.position.set(40, 50, 75);
@@ -151,6 +152,7 @@ export default function ModelUploadViewer3D({
       return;
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsLoading(true);
     setErrorMessage(null);
 
@@ -212,8 +214,46 @@ export default function ModelUploadViewer3D({
         createSampleMechanicalPart();
         setIsLoading(false);
       }
+    } else if (fileFormat === 'glb' || fileFormat === 'gltf') {
+      const loader = new GLTFLoader();
+
+      const onLoaded = (gltf: { scene: THREE.Group }) => {
+        setupObjGroup(gltf.scene);
+        setIsLoading(false);
+      };
+
+      const onError = (err: unknown) => {
+        console.error('Error parsing GLTF/GLB:', err);
+        setErrorMessage('Failed to parse GLB/GLTF file. Check that the model is self-contained.');
+        setIsLoading(false);
+        createSampleMechanicalPart();
+      };
+
+      if (fileData) {
+        const gltfReader = new FileReader();
+        gltfReader.onload = (e) => {
+          try {
+            if (fileFormat === 'glb') {
+              loader.parse(e.target?.result as ArrayBuffer, '', onLoaded, onError);
+            } else {
+              loader.parse(e.target?.result as string, '', onLoaded, onError);
+            }
+          } catch (err) {
+            onError(err);
+          }
+        };
+        if (fileFormat === 'glb') {
+          gltfReader.readAsArrayBuffer(fileData);
+        } else {
+          gltfReader.readAsText(fileData);
+        }
+      } else if (fileUrl) {
+        loader.load(fileUrl, onLoaded, undefined, onError);
+      } else {
+        createSampleMechanicalPart();
+        setIsLoading(false);
+      }
     } else {
-      // 3MF or fallback
       createSampleMechanicalPart();
       setIsLoading(false);
     }
@@ -258,7 +298,7 @@ export default function ModelUploadViewer3D({
     }
   }, [filamentColor, materialType, wireframe]);
 
-  const setupGeometry = (geometry: THREE.BufferGeometry) => {
+  function setupGeometry(geometry: THREE.BufferGeometry) {
     const scene = sceneRef.current;
     if (!scene) return;
 
@@ -303,9 +343,9 @@ export default function ModelUploadViewer3D({
 
     // Fit camera to object bounds
     fitCameraToObject(mesh);
-  };
+  }
 
-  const setupObjGroup = (group: THREE.Group) => {
+  function setupObjGroup(group: THREE.Group) {
     const scene = sceneRef.current;
     if (!scene) return;
 
@@ -319,9 +359,31 @@ export default function ModelUploadViewer3D({
 
     group.position.y = size.y / 2;
 
+    const previewMaterial = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color(filamentColor),
+      roughness: 0.3,
+      metalness: 0.1,
+      wireframe,
+    });
+
+    let triangleCount = 0;
+    group.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+        child.material = previewMaterial;
+        const geometry = child.geometry as THREE.BufferGeometry;
+        if (geometry?.index) {
+          triangleCount += geometry.index.count / 3;
+        } else if (geometry?.attributes?.position) {
+          triangleCount += geometry.attributes.position.count / 3;
+        }
+      }
+    });
+
     const stats = {
       dimensionsMm: { x: Math.round(size.x), y: Math.round(size.z), z: Math.round(size.y) },
-      triangleCount: 42000,
+      triangleCount: Math.round(triangleCount) || 1,
       volumeCm3: Math.round(((size.x * size.y * size.z * 0.4) / 1000) * 10) / 10,
     };
     setModelStats(stats);
@@ -330,9 +392,9 @@ export default function ModelUploadViewer3D({
     scene.add(group);
     modelMeshRef.current = group;
     fitCameraToObject(group);
-  };
+  }
 
-  const createSampleMechanicalPart = () => {
+  function createSampleMechanicalPart() {
     const scene = sceneRef.current;
     if (!scene) return;
 
@@ -376,9 +438,9 @@ export default function ModelUploadViewer3D({
     if (onGeometryComputed) onGeometryComputed(stats);
 
     fitCameraToObject(group);
-  };
+  }
 
-  const fitCameraToObject = (obj: THREE.Object3D) => {
+  function fitCameraToObject(obj: THREE.Object3D) {
     if (!cameraRef.current || !controlsRef.current) return;
     const box = new THREE.Box3().setFromObject(obj);
     const size = new THREE.Vector3();
@@ -392,7 +454,7 @@ export default function ModelUploadViewer3D({
     cameraRef.current.lookAt(0, size.y / 2, 0);
     controlsRef.current.target.set(0, size.y / 2, 0);
     controlsRef.current.update();
-  };
+  }
 
   const handleResetCamera = () => {
     if (modelMeshRef.current) {
@@ -401,41 +463,41 @@ export default function ModelUploadViewer3D({
   };
 
   return (
-    <div className={`relative w-full h-full min-h-[440px] rounded-2xl overflow-hidden border border-slate-200 bg-gradient-to-b from-slate-100 to-slate-200/70 shadow-inner ${className}`}>
+    <div className={`relative w-full h-full min-h-[440px] rounded-2xl overflow-hidden border border-brand-primary/10 bg-gradient-to-b from-brand-lavender/60 via-brand-offwhite to-brand-lavender/30 shadow-inner ${className}`}>
       {/* 3D Canvas */}
       <div ref={containerRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
 
       {/* Loading Overlay */}
       {isLoading && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/85 backdrop-blur-sm z-20">
-          <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-700 rounded-full animate-spin mb-3" />
-          <p className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Parsing Mesh & Computing Geometry...</p>
+          <div className="w-10 h-10 border-4 border-brand-lavender border-t-brand-primary rounded-full animate-spin mb-3" />
+          <p className="text-[10px] font-mono font-semibold text-brand-primary/60 uppercase tracking-[0.16em]">Parsing mesh & computing geometry…</p>
         </div>
       )}
 
       {/* Error Message */}
       {errorMessage && (
-        <div className="absolute top-4 left-4 right-16 bg-red-50 text-red-700 text-xs px-3 py-2 rounded-lg border border-red-200 z-10">
+        <div className="absolute top-4 left-4 right-16 bg-brand-blush text-brand-wine text-[10px] px-3 py-2 rounded-lg border border-brand-pink/20 z-10">
           {errorMessage}
         </div>
       )}
 
       {/* Floating Controls */}
-      <div className="absolute top-4 right-4 flex flex-col gap-1.5 bg-white/90 backdrop-blur-md p-1.5 rounded-xl border border-slate-200/80 shadow-lg z-10">
-        <button onClick={handleResetCamera} title="Center & Reset View" className="p-2 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors">
+      <div className="absolute top-4 right-4 flex flex-col gap-1.5 bg-white/90 backdrop-blur-md p-1.5 rounded-xl border border-brand-primary/10 shadow-lg z-10">
+        <button onClick={handleResetCamera} title="Center & Reset View" className="p-2 rounded-lg text-brand-navy/70 hover:bg-brand-lavender transition-colors">
           <RefreshCw className="w-4 h-4" />
         </button>
         <button
           onClick={() => setAutoRotate(!autoRotate)}
           title={autoRotate ? 'Stop Rotation' : 'Auto Rotate'}
-          className={`p-2 rounded-lg transition-colors ${autoRotate ? 'bg-indigo-600 text-white' : 'text-slate-700 hover:bg-slate-100'}`}
+          className={`p-2 rounded-lg transition-colors ${autoRotate ? 'bg-brand-primary text-white' : 'text-brand-navy/70 hover:bg-brand-lavender'}`}
         >
           <RotateCw className="w-4 h-4" />
         </button>
         <button
           onClick={() => setWireframe(!wireframe)}
           title="Toggle Wireframe Mesh"
-          className={`p-2 rounded-lg transition-colors ${wireframe ? 'bg-amber-500 text-white' : 'text-slate-700 hover:bg-slate-100'}`}
+          className={`p-2 rounded-lg transition-colors ${wireframe ? 'bg-brand-gold text-brand-navy' : 'text-brand-navy/70 hover:bg-brand-lavender'}`}
         >
           <Eye className="w-4 h-4" />
         </button>
@@ -443,20 +505,20 @@ export default function ModelUploadViewer3D({
 
       {/* Computed Geometry Badge (Live Specs) */}
       {modelStats && (
-        <div className="absolute bottom-4 left-4 right-4 flex flex-wrap items-center justify-between gap-2 bg-white/95 backdrop-blur-md p-3 rounded-xl border border-slate-200 shadow-sm text-xs text-slate-700 z-10">
+        <div className="absolute bottom-4 left-4 right-4 flex flex-wrap items-center justify-between gap-2 bg-white/95 backdrop-blur-md p-3 rounded-xl border border-brand-primary/10 shadow-sm text-[10px] font-mono uppercase tracking-[0.08em] text-brand-navy/60 z-10">
           <div className="flex items-center gap-2">
-            <Box className="w-4 h-4 text-indigo-700" />
-            <span className="font-semibold text-slate-900">
+            <Box className="w-4 h-4 text-brand-primary" />
+            <span className="font-semibold text-brand-navy">
               {modelStats.dimensionsMm.x} × {modelStats.dimensionsMm.y} × {modelStats.dimensionsMm.z} mm
             </span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1.5 text-slate-600">
-              <Layers className="w-3.5 h-3.5 text-slate-400" />
-              {modelStats.triangleCount.toLocaleString()} Polygons
+            <span className="flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-brand-primary/40" />
+              {modelStats.triangleCount.toLocaleString()} polygons
             </span>
-            <span className="font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-              ~{modelStats.volumeCm3} cm³ Volume
+            <span className="font-medium text-brand-pine bg-brand-mint px-2 py-0.5 rounded border border-brand-teal/20">
+              ~{modelStats.volumeCm3} cm³ volume
             </span>
           </div>
         </div>

@@ -5,12 +5,12 @@ import { Product, CartItem, Order, CustomPrintRequest, DeliverySettings, OrderFu
 import { INITIAL_PRODUCTS, INITIAL_ORDERS, INITIAL_QUOTATIONS, INITIAL_DELIVERY_SETTINGS } from './seed-data';
 
 const STORAGE_KEYS = {
-  PRODUCTS: 'dp_products_v1',
-  CART: 'dp_cart_v1',
-  ORDERS: 'dp_orders_v1',
-  QUOTATIONS: 'dp_quotations_v1',
-  DELIVERY_SETTINGS: 'dp_delivery_settings_v1',
-  ADMIN_AUTH: 'dp_admin_auth_v1',
+  PRODUCTS: 'dp_products_v2',
+  CART: 'dp_cart_v2',
+  ORDERS: 'dp_orders_v2',
+  QUOTATIONS: 'dp_quotations_v2',
+  DELIVERY_SETTINGS: 'dp_delivery_settings_v2',
+  ADMIN_AUTH: 'dp_admin_auth_v2',
 };
 
 // In-memory cache
@@ -271,6 +271,7 @@ export function useStore() {
 
   useEffect(() => {
     loadFromStorage();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setState({ ...store.getState() });
 
     const handleUpdate = () => {

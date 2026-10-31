@@ -1,23 +1,34 @@
 import type { Metadata } from 'next';
 import React, { Suspense } from 'react';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Instrument_Serif, Space_Grotesk, Space_Mono } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/layout/Navbar';
+import NavbarSpacer from '@/components/layout/NavbarSpacer';
 import Footer from '@/components/layout/Footer';
+import SplashScreen from '@/components/home/SplashScreen';
+import PageTransition from '@/components/layout/PageTransition';
 import { BRAND } from '@/lib/constants';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const instrumentSerif = Instrument_Serif({
+  variable: '--font-instrument-serif',
+  weight: '400',
+  style: ['normal', 'italic'],
   subsets: ['latin'],
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const spaceGrotesk = Space_Grotesk({
+  variable: '--font-space-grotesk',
+  subsets: ['latin'],
+});
+
+const spaceMono = Space_Mono({
+  variable: '--font-space-mono',
+  weight: ['400', '700'],
   subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
-  title: `${BRAND.name} | Premium 3D Printing & Custom Personalization`,
+  title: `${BRAND.name} | Precision 3D Printing Studio`,
   description: BRAND.description,
   icons: {
     icon: '/assets/logo.png',
@@ -32,13 +43,17 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${instrumentSerif.variable} ${spaceGrotesk.variable} ${spaceMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#fafafc] text-[#0d1e3e]">
-        <Suspense fallback={<div className="h-20 bg-white" />}>
+      <body className="flex min-h-full flex-col bg-paper font-sans text-ink">
+        <SplashScreen />
+        <Suspense fallback={<div className="h-[76px] bg-paper" />}>
           <Navbar />
         </Suspense>
-        <main className="flex-1 flex flex-col">{children}</main>
+        <main className="flex flex-1 flex-col">
+          <NavbarSpacer />
+          <PageTransition>{children}</PageTransition>
+        </main>
         <Suspense fallback={null}>
           <Footer />
         </Suspense>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import confetti from 'canvas-confetti';
@@ -37,15 +37,12 @@ export default function CheckoutPage() {
   const [deliveryNotes, setDeliveryNotes] = useState('Please ring bell twice upon arrival');
 
   // Delivery Date & Slot Selection
-  const [deliveryDate, setDeliveryDate] = useState('2026-10-30');
+  const [deliveryDate, setDeliveryDate] = useState(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + deliverySettings.productionLeadDays);
+    return date.toISOString().split('T')[0];
+  });
   const [deliverySlot, setDeliverySlot] = useState(deliverySettings.availableSlots[0]?.label || '9:00 AM – 12:00 PM');
-
-  useEffect(() => {
-    const computed = new Date(Date.now() + deliverySettings.productionLeadDays * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split('T')[0];
-    setDeliveryDate(computed);
-  }, [deliverySettings.productionLeadDays]);
 
   // Payment State
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('Cash on Delivery');
@@ -71,7 +68,7 @@ export default function CheckoutPage() {
           Please add a customizable product to your cart before proceeding to checkout.
         </p>
         <Link
-          href="/shop"
+          href="/catalogue"
           className="mt-5 px-6 py-2.5 rounded-xl font-bold text-xs text-white bg-[#1c0b60]"
         >
           Explore Catalog

@@ -45,23 +45,47 @@ export interface ProductCustomizationSchema {
   };
 }
 
+export type ProductCategory =
+  | 'Keychains'
+  | 'Personalized Gifts'
+  | 'Miniatures'
+  | 'Desk Accessories'
+  | 'Home Decor'
+  | 'Custom Creations';
+
+export type ProductModelType =
+  | 'plate-keychain'
+  | 'name-keychain'
+  | 'desk-nameplate'
+  | 'bag-tag'
+  | 'decorative-miniature'
+  | 'lithophane-lamp'
+  | 'figurine';
+
 export interface Product {
   id: string;
   name: string;
   slug: string;
-  category: 'Keychains' | 'Desk Decor' | 'Luggage & Tags' | 'Art & Miniatures';
+  category: ProductCategory;
   shortDescription: string;
   description: string;
   basePrice: number;
   startingPrice: number;
   imageUrl: string;
-  modelType: 'plate-keychain' | 'name-keychain' | 'desk-nameplate' | 'bag-tag' | 'decorative-miniature';
+  gallery?: string[];
+  modelType: ProductModelType;
   customizable: boolean;
   isPublished: boolean;
   inStock: boolean;
   tags: string[];
   dimensionsMm: { x: number; y: number; z: number };
   customizationSchema: ProductCustomizationSchema;
+  badge?: string;
+  rating?: number;
+  reviewCount?: number;
+  productionDays?: number;
+  highlights?: string[];
+  specifications?: Array<{ label: string; value: string }>;
 }
 
 export interface SavedCustomization {
@@ -80,7 +104,7 @@ export interface CartItem {
   id: string;
   productId: string;
   productName: string;
-  modelType: Product['modelType'];
+  modelType: ProductModelType;
   imageUrl: string;
   unitPrice: number;
   quantity: number;
@@ -164,7 +188,7 @@ export interface CustomPrintRequest {
   fileInfo: {
     fileName: string;
     fileSizeMb: number;
-    fileFormat: 'stl' | 'obj' | '3mf';
+    fileFormat: 'stl' | 'obj' | 'glb' | 'gltf';
     storagePath?: string;
     rawGeometryDataUrl?: string; // base64 or object URL for demo preview
     estimatedDimensionsMm?: { x: number; y: number; z: number };

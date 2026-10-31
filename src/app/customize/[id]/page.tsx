@@ -1,60 +1,85 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useMemo, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  Sparkles,
-  ShoppingBag,
   ArrowRight,
-  RotateCcw,
   Check,
-  Layers,
-  HelpCircle,
-  FileCheck,
   ChevronRight,
-  ShieldCheck,
+  FileCheck,
+  HelpCircle,
+  Layers,
+  RotateCcw,
+  ShoppingBag,
+  Sparkles,
   Tag,
 } from 'lucide-react';
 import ProductViewer3D from '@/components/3d/ProductViewer3D';
 import { useStore } from '@/lib/store';
 import { calculateCustomizedPrice } from '@/lib/pricing';
-import { SavedCustomization, CartItem, FontOption, MaterialType } from '@/types';
-import { BRAND, AVAILABLE_MATERIALS } from '@/lib/constants';
+import type { CartItem, FontOption, MaterialType, Product, SavedCustomization } from '@/types';
+import { formatINR, getProductBySlugOrId, getProductHref } from '@/lib/catalog';
+import Reveal from '@/components/ui/Reveal';
 
 export default function CustomizePage() {
-  const router = useRouter();
   const routeParams = useParams();
-  const id = (routeParams?.id as string) || 'prod-1';
-  const { products, addToCart } = useStore();
+  const key = (routeParams?.id as string) || '';
+  const { products } = useStore();
+  const product = getProductBySlugOrId(products, key);
 
-  const product = products.find((p) => p.id === id) || products[0];
+  if (!product) {
+    return (
+      <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
+        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-lavender text-brand-primary">
+          <Tag className="h-6 w-6" />
+        </span>
+        <h1 className="mt-5 font-display text-4xl leading-none tracking-[-0.03em] text-brand-navy">
+          Design not found.
+        </h1>
+        <p className="mt-3 max-w-sm text-sm text-brand-navy/50">
+          This configurator may have moved. Pick a piece from the catalogue to start again.
+        </p>
+        <Link
+          href="/catalogue"
+          className="mt-6 rounded-full bg-brand-primary px-5 py-3 font-mono text-[9px] uppercase tracking-[0.14em] text-white transition-colors hover:bg-brand-pink"
+        >
+          Back to catalogue
+        </Link>
+      </div>
+    );
+  }
+
+  return <Customizer key={product.id} product={product} />;
+}
+
+function Customizer({ product }: { product: Product }) {
+  const router = useRouter();
+  const { addToCart } = useStore();
   const schema = product.customizationSchema;
 
-  // Customization Form State
-  const [customText, setCustomText] = useState<string>(schema.defaultText || '3D PRINT');
-  const [bodyColor, setBodyColor] = useState<string>(
-    schema.supportedColors[0]?.hex || '#1c0b60'
-  );
+  const [customText, setCustomText] = useState<string>(schema.defaultText ?? '3D PRINT');
+  const [bodyColor, setBodyColor] = useState<string>(schema.supportedColors[0]?.hex ?? '#1c0b60');
   const [textColor, setTextColor] = useState<string>(
-    schema.supportedColors[3]?.hex || '#fed003'
+    schema.supportedColors.find((color) => color.id === 'gold')?.hex ??
+      schema.supportedColors[1]?.hex ??
+      '#fed003'
   );
   const [selectedFont, setSelectedFont] = useState<FontOption>(
-    (schema.supportedFonts && schema.supportedFonts[0]) || 'Inter'
+    schema.supportedFonts?.[0] ?? 'Inter'
   );
   const [selectedMaterial, setSelectedMaterial] = useState<MaterialType>(
-    (schema.supportedMaterials && schema.supportedMaterials[0]) || 'PLA'
+    schema.supportedMaterials?.[0] ?? 'PLA'
   );
   const [selectedSizeId, setSelectedSizeId] = useState<string>(
-    (schema.supportedSizes && schema.supportedSizes[0]?.id) || 'standard'
+    schema.supportedSizes?.[0]?.id ?? 'standard'
   );
   const [selectedAccessories, setSelectedAccessories] = useState<string[]>([]);
-  const [quantity, setQuantity] = useState<number>(1);
-  const [isAddedToast, setIsAddedToast] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [added, setAdded] = useState(false);
 
-  // Current customization object
-  const currentCustomization: SavedCustomization = useMemo(() => {
-    return {
+  const customization: SavedCustomization = useMemo(
+    () => ({
       text: customText,
       bodyColor,
       textColor,
@@ -62,26 +87,23 @@ export default function CustomizePage() {
       material: selectedMaterial,
       sizeId: selectedSizeId,
       selectedAccessories,
-    };
-  }, [customText, bodyColor, textColor, selectedFont, selectedMaterial, selectedSizeId, selectedAccessories]);
+    }),
+    [customText, bodyColor, textColor, selectedFont, selectedMaterial, selectedSizeId, selectedAccessories]
+  );
 
-  // Deterministic live price calculation
-  const priceBreakdown = useMemo(() => {
-    return calculateCustomizedPrice(product, currentCustomization, quantity);
-  }, [product, currentCustomization, quantity]);
+  const price = useMemo(
+    () => calculateCustomizedPrice(product, customization, quantity),
+    [product, customization, quantity]
+  );
 
-  const toggleAccessory = (accId: string) => {
-    if (selectedAccessories.includes(accId)) {
-      setSelectedAccessories(selectedAccessories.filter((id) => id !== accId));
-    } else {
-      setSelectedAccessories([...selectedAccessories, accId]);
-    }
-  };
-
-  const handleReset = () => {
-    setCustomText(schema.defaultText || '3D PRINT');
-    setBodyColor(schema.supportedColors[0]?.hex || '#1c0b60');
-    setTextColor(schema.supportedColors[3]?.hex || '#fed003');
+  const reset = () => {
+    setCustomText(schema.defaultText ?? '3D PRINT');
+    setBodyColor(schema.supportedColors[0]?.hex ?? '#1c0b60');
+    setTextColor(
+      schema.supportedColors.find((color) => color.id === 'gold')?.hex ??
+        schema.supportedColors[1]?.hex ??
+        '#fed003'
+    );
     if (schema.supportedFonts) setSelectedFont(schema.supportedFonts[0]);
     if (schema.supportedMaterials) setSelectedMaterial(schema.supportedMaterials[0]);
     if (schema.supportedSizes) setSelectedSizeId(schema.supportedSizes[0].id);
@@ -89,167 +111,200 @@ export default function CustomizePage() {
     setQuantity(1);
   };
 
-  const handleAddToCart = () => {
-    const cartItem: CartItem = {
-      id: `cart-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+  const addCurrentToCart = () => {
+    const item: CartItem = {
+      id: `cart-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       productId: product.id,
       productName: product.name,
       modelType: product.modelType,
       imageUrl: product.imageUrl,
-      unitPrice: priceBreakdown.unitTotal,
+      unitPrice: price.unitTotal,
       quantity,
-      customization: currentCustomization,
+      customization,
       calculatedPriceBreakdown: {
-        basePrice: priceBreakdown.basePrice,
-        personalizationFee: priceBreakdown.personalizationFee,
-        materialSurcharge: priceBreakdown.materialSurcharge,
-        sizeSurcharge: priceBreakdown.sizeSurcharge,
-        accessoriesFee: priceBreakdown.accessoriesFee,
-        unitTotal: priceBreakdown.unitTotal,
+        basePrice: price.basePrice,
+        personalizationFee: price.personalizationFee,
+        materialSurcharge: price.materialSurcharge,
+        sizeSurcharge: price.sizeSurcharge,
+        accessoriesFee: price.accessoriesFee,
+        unitTotal: price.unitTotal,
       },
     };
-
-    addToCart(cartItem);
-    setIsAddedToast(true);
-    setTimeout(() => setIsAddedToast(false), 3000);
+    addToCart(item);
+    setAdded(true);
+    window.setTimeout(() => setAdded(false), 3200);
   };
 
-  const handleBuyNow = () => {
-    handleAddToCart();
+  const buyNow = () => {
+    addCurrentToCart();
     router.push('/checkout');
   };
 
-  const handleViewDesignSummary = () => {
-    // Store active preview customization in session for the summary page
+  const viewSummary = () => {
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('dp_preview_product_id', product.id);
-      sessionStorage.setItem('dp_preview_customization', JSON.stringify(currentCustomization));
-      sessionStorage.setItem('dp_preview_quantity', quantity.toString());
+      sessionStorage.setItem('dp_preview_customization', JSON.stringify(customization));
+      sessionStorage.setItem('dp_preview_quantity', String(quantity));
     }
     router.push('/design-summary');
   };
 
+  const toggleAccessory = (accessoryId: string) => {
+    setSelectedAccessories((current) =>
+      current.includes(accessoryId)
+        ? current.filter((id) => id !== accessoryId)
+        : [...current, accessoryId]
+    );
+  };
+
   return (
-    <div className="w-full min-h-screen bg-slate-50/70 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Breadcrumb Navigation */}
-        <nav className="flex items-center gap-2 text-xs text-slate-500 mb-6">
-          <Link href="/" className="hover:text-slate-900">Home</Link>
-          <ChevronRight className="w-3.5 h-3.5" />
-          <Link href="/shop" className="hover:text-slate-900">Shop Catalog</Link>
-          <ChevronRight className="w-3.5 h-3.5" />
-          <span className="text-slate-900 font-semibold truncate">{product.name}</span>
+    <div className="w-full bg-brand-offwhite pb-20">
+      <div className="mx-auto max-w-[92rem] px-4 pt-6 sm:px-6 sm:pt-8 lg:px-10">
+        <nav className="flex items-center gap-2 font-mono text-[8px] uppercase tracking-[0.16em] text-brand-primary/40">
+          <Link href="/" className="transition-colors hover:text-brand-primary">
+            Home
+          </Link>
+          <ChevronRight className="h-3 w-3" />
+          <Link href="/catalogue" className="transition-colors hover:text-brand-primary">
+            Catalogue
+          </Link>
+          <ChevronRight className="h-3 w-3" />
+          <Link href={getProductHref(product)} className="transition-colors hover:text-brand-primary">
+            {product.name}
+          </Link>
+          <ChevronRight className="h-3 w-3" />
+          <span className="text-brand-primary/65">Customize</span>
         </nav>
 
-        {/* 2-Column Responsive Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* LEFT COLUMN: Large 3D Preview Canvas */}
-          <div className="lg:col-span-7 flex flex-col gap-4">
-            <div className="w-full aspect-square sm:aspect-[4/3] lg:aspect-[5/4] max-h-[620px]">
-              <ProductViewer3D
-                product={product}
-                customization={currentCustomization}
-                className="shadow-md"
-              />
-            </div>
-
-            {/* Product Key Specifications */}
-            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-wrap items-center justify-between gap-4 text-xs">
-              <div>
-                <span className="text-slate-400 block font-medium">Standard Dimensions</span>
-                <span className="font-bold text-slate-900">
-                  {product.dimensionsMm.x} × {product.dimensionsMm.y} × {product.dimensionsMm.z} mm
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[1.02fr_0.98fr] lg:gap-10">
+          <Reveal className="lg:sticky lg:top-28">
+            <div className="overflow-hidden rounded-[1.8rem] border border-brand-primary/10 bg-white p-2 shadow-[0_30px_80px_-52px_rgba(28,11,96,0.4)]">
+              <div className="flex items-center justify-between px-3 py-2">
+                <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-brand-primary/50">
+                  {product.name}
+                </span>
+                <span className="flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.16em] text-brand-teal">
+                  <span className="h-1.5 w-1.5 rounded-full bg-brand-teal" />
+                  Live preview
                 </span>
               </div>
-              <div>
-                <span className="text-slate-400 block font-medium">Print Technology</span>
-                <span className="font-bold text-indigo-900">Dual-Extrusion Precision FDM</span>
+              <div className="relative aspect-square overflow-hidden rounded-[1.4rem] sm:aspect-[4/3] lg:aspect-square">
+                <ProductViewer3D
+                  product={product}
+                  customization={customization}
+                  className="!min-h-full !rounded-none !border-0"
+                />
               </div>
-              <div>
-                <span className="text-slate-400 block font-medium">Lead Time</span>
-                <span className="font-bold text-emerald-700">1 – 2 Business Days</span>
+              <div className="grid grid-cols-3 gap-2 p-2">
+                {[
+                  { label: 'Material', value: selectedMaterial },
+                  { label: 'Size', value: schema.supportedSizes?.find((size) => size.id === selectedSizeId)?.name ?? 'Standard' },
+                  { label: 'Unit price', value: formatINR(price.unitTotal) },
+                ].map((stat) => (
+                  <div key={stat.label} className="rounded-xl border border-brand-primary/10 bg-brand-lavender/40 px-2.5 py-2">
+                    <span className="block font-mono text-[7px] uppercase tracking-[0.16em] text-brand-primary/40">
+                      {stat.label}
+                    </span>
+                    <span className="mt-1 block truncate font-mono text-[9px] font-semibold uppercase tracking-[0.04em] text-brand-navy/75">
+                      {stat.value}
+                    </span>
+                  </div>
+                ))}
               </div>
+            </div>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 px-1">
+              <p className="max-w-md font-mono text-[7px] uppercase leading-relaxed tracking-[0.12em] text-brand-navy/35">
+                Preview only. The studio confirms geometry, colour and finish before printing.
+              </p>
               <button
-                onClick={handleReset}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 font-medium transition-colors"
+                type="button"
+                onClick={reset}
+                className="inline-flex items-center gap-1.5 rounded-full border border-brand-primary/10 bg-white px-3 py-2 font-mono text-[8px] uppercase tracking-[0.12em] text-brand-primary/60 transition-colors hover:border-brand-primary/30 hover:text-brand-primary"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span>Reset Defaults</span>
+                <RotateCcw className="h-3 w-3" />
+                Reset
               </button>
             </div>
-          </div>
+          </Reveal>
 
-          {/* RIGHT COLUMN: Customization Controls Panel */}
-          <div className="lg:col-span-5 flex flex-col gap-6">
-            <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/90 shadow-md space-y-6">
-              {/* Product Header */}
-              <div>
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-bold text-indigo-700 uppercase tracking-wider">
+          <Reveal delay={0.08}>
+            <div className="rounded-[1.8rem] border border-brand-primary/10 bg-white p-4 shadow-[0_30px_80px_-56px_rgba(28,11,96,0.4)] sm:p-6">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <span className="rounded-full bg-brand-lavender px-2.5 py-1 font-mono text-[8px] uppercase tracking-[0.16em] text-brand-primary">
                     {product.category}
                   </span>
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    In Stock & Custom Ready
-                  </span>
-                </div>
-                <h1 className="text-2xl font-extrabold text-slate-900 mt-1">{product.name}</h1>
-                <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">{product.description}</p>
-              </div>
-
-              {/* 1. Personalized Text Input */}
-              {schema.allowText && (
-                <div className="space-y-2 pt-2 border-t border-slate-100">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                      {schema.textLabel || 'Personalized Text'}
-                    </label>
-                    <span className="text-[11px] font-medium text-slate-400">
-                      {customText.length}/{schema.maxTextLength || 14} characters
-                    </span>
-                  </div>
-                  <input
-                    type="text"
-                    maxLength={schema.maxTextLength || 14}
-                    value={customText}
-                    onChange={(e) => setCustomText(e.target.value.toUpperCase())}
-                    placeholder="Enter your custom text..."
-                    className="w-full px-4 py-3 rounded-xl border border-slate-300 font-mono font-bold text-slate-900 text-sm tracking-wider focus:outline-none focus:ring-2 focus:ring-[#1c0b60] focus:border-transparent uppercase bg-slate-50/50"
-                  />
-                  <p className="text-[11px] text-slate-400">
-                    Text updates live in 3D above with realistic extruded layer geometry.
+                  <h1 className="mt-3 font-display text-[clamp(2.1rem,4.5vw,3.2rem)] leading-[0.92] tracking-[-0.035em] text-brand-navy">
+                    {product.name}
+                  </h1>
+                  <p className="mt-2 max-w-md text-xs leading-relaxed text-brand-navy/50">
+                    {product.shortDescription}
                   </p>
                 </div>
-              )}
+                <span className="hidden shrink-0 items-center gap-1 rounded-full border border-brand-teal/20 bg-brand-mint px-2.5 py-1.5 font-mono text-[7px] uppercase tracking-[0.12em] text-brand-pine sm:flex">
+                  <span className="h-1.5 w-1.5 rounded-full bg-brand-teal" />
+                  In stock
+                </span>
+              </div>
 
-              {/* 2. Color Swatches: Body Color & Text Color */}
-              <div className="space-y-4 pt-4 border-t border-slate-100">
-                {/* Body Color */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                      Base / Body Color
-                    </label>
-                    <span className="text-[11px] font-semibold text-slate-600">
-                      {schema.supportedColors.find((c) => c.hex === bodyColor)?.name || bodyColor}
+              <div className="mt-6 space-y-6">
+                {schema.allowText && (
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label htmlFor="customize-text" className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.16em] text-brand-primary/55">
+                        <Sparkles className="h-3.5 w-3.5 text-brand-pink" />
+                        {schema.textLabel ?? 'Personalised text'}
+                      </label>
+                      <span className="font-mono text-[8px] tabular-nums text-brand-primary/35">
+                        {customText.length}/{schema.maxTextLength ?? 14}
+                      </span>
+                    </div>
+                    <input
+                      id="customize-text"
+                      type="text"
+                      maxLength={schema.maxTextLength ?? 14}
+                      value={customText}
+                      onChange={(event) => setCustomText(event.target.value.toUpperCase())}
+                      placeholder="Type your text…"
+                      className="mt-2 w-full rounded-xl border border-brand-primary/10 bg-brand-lavender/30 px-4 py-3 font-mono text-sm font-bold uppercase tracking-[0.08em] text-brand-navy outline-none transition-colors placeholder:text-brand-navy/25 focus:border-brand-primary/40 focus:bg-white"
+                    />
+                    <p className="mt-1.5 font-mono text-[7px] uppercase tracking-[0.12em] text-brand-navy/35">
+                      Updates live in the 3D preview.
+                    </p>
+                  </div>
+                )}
+
+                <div className="border-t border-brand-primary/10 pt-5">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-brand-primary/55">
+                      Body colour
+                    </span>
+                    <span className="font-mono text-[8px] text-brand-primary/40">
+                      {schema.supportedColors.find((color) => color.hex === bodyColor)?.name ?? bodyColor}
                     </span>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="mt-2 flex flex-wrap gap-2">
                     {schema.supportedColors.map((color) => {
-                      const isSelected = bodyColor.toLowerCase() === color.hex.toLowerCase();
+                      const selected = bodyColor.toLowerCase() === color.hex.toLowerCase();
                       return (
                         <button
                           key={color.id}
+                          type="button"
+                          aria-label={`Select ${color.name}`}
                           onClick={() => setBodyColor(color.hex)}
-                          title={color.name}
-                          className={`relative w-8 h-8 rounded-full border-2 transition-transform ${
-                            isSelected
-                              ? 'border-indigo-900 scale-110 shadow-md ring-2 ring-indigo-200'
-                              : 'border-slate-200 hover:scale-105'
+                          className={`relative flex h-8 w-8 items-center justify-center rounded-full border-2 transition-transform hover:scale-110 ${
+                            selected
+                              ? 'border-brand-primary ring-2 ring-brand-primary/15 ring-offset-2'
+                              : 'border-white shadow-sm'
                           }`}
                           style={{ backgroundColor: color.hex }}
                         >
-                          {isSelected && (
-                            <Check className={`w-4 h-4 mx-auto ${['#f8f8f7', '#fed003'].includes(color.hex) ? 'text-slate-900' : 'text-white'}`} />
+                          {selected && (
+                            <Check
+                              className={`h-3.5 w-3.5 ${
+                                ['white', 'gold'].includes(color.id) ? 'text-brand-navy' : 'text-white'
+                              }`}
+                            />
                           )}
                         </button>
                       );
@@ -257,34 +312,38 @@ export default function CustomizePage() {
                   </div>
                 </div>
 
-                {/* Text Color (if allowed) */}
                 {schema.allowTextColor && (
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                        Embossed Lettering Color
-                      </label>
-                      <span className="text-[11px] font-semibold text-slate-600">
-                        {schema.supportedColors.find((c) => c.hex === textColor)?.name || textColor}
+                  <div className="border-t border-brand-primary/10 pt-5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-brand-primary/55">
+                        Lettering colour
+                      </span>
+                      <span className="font-mono text-[8px] text-brand-primary/40">
+                        {schema.supportedColors.find((color) => color.hex === textColor)?.name ?? textColor}
                       </span>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="mt-2 flex flex-wrap gap-2">
                       {schema.supportedColors.map((color) => {
-                        const isSelected = textColor.toLowerCase() === color.hex.toLowerCase();
+                        const selected = textColor.toLowerCase() === color.hex.toLowerCase();
                         return (
                           <button
                             key={color.id}
+                            type="button"
+                            aria-label={`Select lettering ${color.name}`}
                             onClick={() => setTextColor(color.hex)}
-                            title={color.name}
-                            className={`relative w-8 h-8 rounded-full border-2 transition-transform ${
-                              isSelected
-                                ? 'border-indigo-900 scale-110 shadow-md ring-2 ring-indigo-200'
-                                : 'border-slate-200 hover:scale-105'
+                            className={`relative flex h-8 w-8 items-center justify-center rounded-full border-2 transition-transform hover:scale-110 ${
+                              selected
+                                ? 'border-brand-primary ring-2 ring-brand-primary/15 ring-offset-2'
+                                : 'border-white shadow-sm'
                             }`}
                             style={{ backgroundColor: color.hex }}
                           >
-                            {isSelected && (
-                              <Check className={`w-4 h-4 mx-auto ${['#f8f8f7', '#fed003'].includes(color.hex) ? 'text-slate-900' : 'text-white'}`} />
+                            {selected && (
+                              <Check
+                                className={`h-3.5 w-3.5 ${
+                                  ['white', 'gold'].includes(color.id) ? 'text-brand-navy' : 'text-white'
+                                }`}
+                              />
                             )}
                           </button>
                         );
@@ -292,235 +351,264 @@ export default function CustomizePage() {
                     </div>
                   </div>
                 )}
-              </div>
 
-              {/* 3. Font Selection */}
-              {schema.supportedFonts && schema.supportedFonts.length > 0 && (
-                <div className="space-y-2 pt-4 border-t border-slate-100">
-                  <label className="text-xs font-bold text-slate-900 uppercase tracking-wider block">
-                    Typography Style
-                  </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {schema.supportedFonts.map((font) => (
-                      <button
-                        key={font}
-                        onClick={() => setSelectedFont(font)}
-                        className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
-                          selectedFont === font
-                            ? 'bg-indigo-50 border-indigo-900 text-indigo-950 shadow-xs'
-                            : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                        }`}
-                      >
-                        {font}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* 4. Filament Material Selection */}
-              {schema.supportedMaterials && schema.supportedMaterials.length > 0 && (
-                <div className="space-y-2 pt-4 border-t border-slate-100">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                      Polymer Material
-                    </label>
-                    <span className="text-[11px] text-indigo-700 font-semibold">
-                      +{BRAND.currency}{schema.pricingRules.materialSurcharges[selectedMaterial] || 0}
+                {schema.supportedFonts && schema.supportedFonts.length > 0 && (
+                  <div className="border-t border-brand-primary/10 pt-5">
+                    <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-brand-primary/55">
+                      Typography
                     </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {schema.supportedMaterials.map((mat) => {
-                      const surcharge = schema.pricingRules.materialSurcharges[mat] || 0;
-                      return (
+                    <div className="mt-2 grid grid-cols-3 gap-2">
+                      {schema.supportedFonts.map((font) => (
                         <button
-                          key={mat}
-                          onClick={() => setSelectedMaterial(mat)}
-                          className={`p-3 rounded-xl border text-left transition-all ${
-                            selectedMaterial === mat
-                              ? 'bg-indigo-50/80 border-[#1c0b60] text-indigo-950 shadow-xs ring-1 ring-[#1c0b60]'
-                              : 'border-slate-200 text-slate-700 hover:bg-slate-50'
+                          key={font}
+                          type="button"
+                          onClick={() => setSelectedFont(font)}
+                          className={`rounded-xl border px-2 py-2.5 font-mono text-[9px] transition-colors ${
+                            selectedFont === font
+                              ? 'border-brand-primary bg-brand-primary text-white'
+                              : 'border-brand-primary/10 bg-brand-lavender/30 text-brand-navy/55 hover:border-brand-primary/30'
                           }`}
                         >
-                          <div className="font-bold text-xs">{mat}</div>
-                          <div className="text-[10px] text-slate-500 mt-0.5">
-                            {surcharge > 0 ? `+${BRAND.currency}${surcharge}` : 'Included in base'}
-                          </div>
+                          {font}
                         </button>
-                      );
-                    })}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* 5. Supported Sizes */}
-              {schema.supportedSizes && schema.supportedSizes.length > 1 && (
-                <div className="space-y-2 pt-4 border-t border-slate-100">
-                  <label className="text-xs font-bold text-slate-900 uppercase tracking-wider block">
-                    Product Dimensions / Scale
-                  </label>
-                  <div className="space-y-2">
-                    {schema.supportedSizes.map((size) => (
-                      <button
-                        key={size.id}
-                        onClick={() => setSelectedSizeId(size.id)}
-                        className={`w-full p-3 rounded-xl border flex items-center justify-between text-xs transition-all ${
-                          selectedSizeId === size.id
-                            ? 'bg-indigo-50/80 border-[#1c0b60] text-indigo-950 font-semibold'
-                            : 'border-slate-200 text-slate-700 hover:bg-slate-50'
-                        }`}
-                      >
-                        <span>{size.name}</span>
-                        <span className="font-bold">
-                          {size.surcharge > 0 ? `+${BRAND.currency}${size.surcharge}` : 'Standard'}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* 6. Optional Accessories */}
-              {schema.supportedAccessories && schema.supportedAccessories.length > 0 && (
-                <div className="space-y-2 pt-4 border-t border-slate-100">
-                  <label className="text-xs font-bold text-slate-900 uppercase tracking-wider block">
-                    Hardware Attachments & Add-ons
-                  </label>
-                  <div className="space-y-2">
-                    {schema.supportedAccessories.map((acc) => {
-                      const isChecked = selectedAccessories.includes(acc.id);
-                      return (
-                        <button
-                          key={acc.id}
-                          onClick={() => toggleAccessory(acc.id)}
-                          className={`w-full p-3 rounded-xl border flex items-center justify-between text-xs transition-all ${
-                            isChecked
-                              ? 'bg-amber-50/70 border-amber-500 text-amber-950 font-semibold'
-                              : 'border-slate-200 text-slate-700 hover:bg-slate-50'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <span className={`w-4 h-4 rounded flex items-center justify-center border ${isChecked ? 'bg-amber-500 border-amber-600 text-white' : 'border-slate-300'}`}>
-                              {isChecked && <Check className="w-3 h-3" />}
+                {schema.supportedMaterials && schema.supportedMaterials.length > 0 && (
+                  <div className="border-t border-brand-primary/10 pt-5">
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.16em] text-brand-primary/55">
+                        <Layers className="h-3.5 w-3.5 text-brand-teal" />
+                        Material
+                      </span>
+                      <span className="font-mono text-[8px] text-brand-primary/40">
+                        +{formatINR(schema.pricingRules.materialSurcharges[selectedMaterial] ?? 0)}
+                      </span>
+                    </div>
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                      {schema.supportedMaterials.map((material) => {
+                        const surcharge = schema.pricingRules.materialSurcharges[material] ?? 0;
+                        return (
+                          <button
+                            key={material}
+                            type="button"
+                            onClick={() => setSelectedMaterial(material)}
+                            className={`rounded-xl border p-2.5 text-left transition-colors ${
+                              selectedMaterial === material
+                                ? 'border-brand-primary bg-brand-primary text-white'
+                                : 'border-brand-primary/10 bg-brand-lavender/30 text-brand-navy/65 hover:border-brand-primary/30'
+                            }`}
+                          >
+                            <span className="block font-mono text-[9px] font-semibold">{material}</span>
+                            <span className={`mt-0.5 block font-mono text-[8px] ${selectedMaterial === material ? 'text-white/50' : 'text-brand-navy/40'}`}>
+                              {surcharge > 0 ? `+${formatINR(surcharge)}` : 'Included'}
                             </span>
-                            <span>{acc.name}</span>
-                          </div>
-                          <span className="font-bold text-slate-900">+{BRAND.currency}{acc.price}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {schema.supportedSizes && schema.supportedSizes.length > 1 && (
+                  <div className="border-t border-brand-primary/10 pt-5">
+                    <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-brand-primary/55">
+                      Size
+                    </span>
+                    <div className="mt-2 space-y-2">
+                      {schema.supportedSizes.map((size) => (
+                        <button
+                          key={size.id}
+                          type="button"
+                          onClick={() => setSelectedSizeId(size.id)}
+                          className={`flex w-full items-center justify-between rounded-xl border px-3 py-2.5 text-left transition-colors ${
+                            selectedSizeId === size.id
+                              ? 'border-brand-primary bg-brand-lavender text-brand-navy'
+                              : 'border-brand-primary/10 text-brand-navy/55 hover:border-brand-primary/30'
+                          }`}
+                        >
+                          <span>
+                            <span className="block font-mono text-[9px] font-semibold">{size.name}</span>
+                            <span className="mt-0.5 block font-mono text-[8px] text-brand-navy/40">
+                              {size.dimensionsMm.x} × {size.dimensionsMm.y} × {size.dimensionsMm.z} mm
+                            </span>
+                          </span>
+                          <span className="font-mono text-[9px] font-semibold text-brand-primary">
+                            {size.surcharge > 0 ? `+${formatINR(size.surcharge)}` : 'Standard'}
+                          </span>
                         </button>
-                      );
-                    })}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* 7. Quantity and Live Dynamic Price Breakdown */}
-              <div className="pt-4 border-t border-slate-100 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">Quantity</span>
-                  <div className="flex items-center gap-3 bg-slate-100 p-1 rounded-xl border border-slate-200">
-                    <button
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="w-7 h-7 flex items-center justify-center bg-white rounded-lg text-slate-700 hover:bg-slate-200 font-bold text-sm shadow-xs"
-                    >
-                      -
-                    </button>
-                    <span className="text-xs font-bold text-slate-900 w-6 text-center">{quantity}</span>
-                    <button
-                      onClick={() => setQuantity(quantity + 1)}
-                      className="w-7 h-7 flex items-center justify-center bg-white rounded-lg text-slate-700 hover:bg-slate-200 font-bold text-sm shadow-xs"
-                    >
-                      +
-                    </button>
+                {schema.supportedAccessories && schema.supportedAccessories.length > 0 && (
+                  <div className="border-t border-brand-primary/10 pt-5">
+                    <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-brand-primary/55">
+                      Add-ons
+                    </span>
+                    <div className="mt-2 space-y-2">
+                      {schema.supportedAccessories.map((accessory) => {
+                        const checked = selectedAccessories.includes(accessory.id);
+                        return (
+                          <button
+                            key={accessory.id}
+                            type="button"
+                            onClick={() => toggleAccessory(accessory.id)}
+                            className={`flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors ${
+                              checked
+                                ? 'border-brand-gold/60 bg-brand-cream'
+                                : 'border-brand-primary/10 hover:border-brand-primary/30'
+                            }`}
+                          >
+                            <span className="flex items-center gap-2.5">
+                              <span
+                                className={`flex h-4 w-4 items-center justify-center rounded border ${
+                                  checked
+                                    ? 'border-brand-primary bg-brand-primary text-white'
+                                    : 'border-brand-primary/25'
+                                }`}
+                              >
+                                {checked && <Check className="h-3 w-3" />}
+                              </span>
+                              <span className="font-mono text-[9px] text-brand-navy/70">{accessory.name}</span>
+                            </span>
+                            <span className="shrink-0 font-mono text-[9px] font-semibold text-brand-primary">
+                              +{formatINR(accessory.price)}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {/* Price Summary Itemization Box */}
-                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-2 text-xs">
-                  <div className="flex justify-between text-slate-500">
-                    <span>Base Model Price:</span>
-                    <span>{BRAND.currency}{priceBreakdown.basePrice}</span>
+                <div className="border-t border-brand-primary/10 pt-5">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-brand-primary/55">
+                      Quantity
+                    </span>
+                    <div className="flex items-center gap-3 rounded-full border border-brand-primary/10 bg-brand-lavender/40 p-1">
+                      <button
+                        type="button"
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm font-bold text-brand-primary shadow-sm transition-colors hover:bg-brand-primary hover:text-white"
+                        aria-label="Decrease quantity"
+                      >
+                        −
+                      </button>
+                      <span className="w-5 text-center font-mono text-[10px] font-bold text-brand-navy">{quantity}</span>
+                      <button
+                        type="button"
+                        onClick={() => setQuantity(quantity + 1)}
+                        className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm font-bold text-brand-primary shadow-sm transition-colors hover:bg-brand-primary hover:text-white"
+                        aria-label="Increase quantity"
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
-                  {priceBreakdown.personalizationFee > 0 && (
-                    <div className="flex justify-between text-slate-500">
-                      <span>3D Raised Personalization:</span>
-                      <span>+{BRAND.currency}{priceBreakdown.personalizationFee}</span>
-                    </div>
-                  )}
-                  {priceBreakdown.materialSurcharge > 0 && (
-                    <div className="flex justify-between text-slate-500">
-                      <span>Material Surcharge ({selectedMaterial}):</span>
-                      <span>+{BRAND.currency}{priceBreakdown.materialSurcharge}</span>
-                    </div>
-                  )}
-                  {priceBreakdown.sizeSurcharge > 0 && (
-                    <div className="flex justify-between text-slate-500">
-                      <span>Size Upgrade:</span>
-                      <span>+{BRAND.currency}{priceBreakdown.sizeSurcharge}</span>
-                    </div>
-                  )}
-                  {priceBreakdown.accessoriesFee > 0 && (
-                    <div className="flex justify-between text-slate-500">
-                      <span>Hardware Attachments:</span>
-                      <span>+{BRAND.currency}{priceBreakdown.accessoriesFee}</span>
-                    </div>
-                  )}
-                  <div className="pt-2 border-t border-slate-200 flex justify-between items-baseline">
-                    <div>
-                      <span className="text-slate-900 font-bold text-sm">Total Unit Price:</span>
-                      {quantity > 1 && (
-                        <span className="text-[11px] text-slate-500 ml-1">× {quantity} items</span>
+
+                  <div className="mt-4 rounded-2xl border border-brand-primary/10 bg-brand-lavender/30 p-4">
+                    <div className="space-y-1.5 font-mono text-[9px] text-brand-navy/50">
+                      <div className="flex justify-between">
+                        <span>Base piece</span>
+                        <span>{formatINR(price.basePrice)}</span>
+                      </div>
+                      {price.personalizationFee > 0 && (
+                        <div className="flex justify-between">
+                          <span>Personalisation</span>
+                          <span>+{formatINR(price.personalizationFee)}</span>
+                        </div>
+                      )}
+                      {price.materialSurcharge > 0 && (
+                        <div className="flex justify-between">
+                          <span>Material ({selectedMaterial})</span>
+                          <span>+{formatINR(price.materialSurcharge)}</span>
+                        </div>
+                      )}
+                      {price.sizeSurcharge > 0 && (
+                        <div className="flex justify-between">
+                          <span>Size upgrade</span>
+                          <span>+{formatINR(price.sizeSurcharge)}</span>
+                        </div>
+                      )}
+                      {price.accessoriesFee > 0 && (
+                        <div className="flex justify-between">
+                          <span>Add-ons</span>
+                          <span>+{formatINR(price.accessoriesFee)}</span>
+                        </div>
                       )}
                     </div>
-                    <div className="text-xl font-extrabold text-[#1c0b60]">
-                      {BRAND.currency}{priceBreakdown.totalForQuantity}
+                    <div className="mt-3 flex items-end justify-between border-t border-brand-primary/10 pt-3">
+                      <div>
+                        <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-brand-primary/40">
+                          Total {quantity > 1 ? `· ${quantity} pieces` : ''}
+                        </span>
+                        <div className="mt-1 font-display text-[2.2rem] leading-none tracking-[-0.03em] text-brand-navy">
+                          {formatINR(price.totalForQuantity)}
+                        </div>
+                      </div>
+                      <span className="font-mono text-[8px] uppercase tracking-[0.1em] text-brand-primary/35">
+                        incl. personalisation
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Action Buttons: Add to Cart, Buy Now, Design Summary */}
-              <div className="space-y-2.5 pt-2">
+              <div className="mt-5 space-y-2.5">
                 <button
-                  onClick={handleAddToCart}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-white bg-[#1c0b60] hover:bg-[#28137e] shadow-md shadow-indigo-950/15 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+                  type="button"
+                  onClick={addCurrentToCart}
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-brand-primary px-5 py-3.5 font-mono text-[10px] uppercase tracking-[0.15em] text-white transition-all hover:-translate-y-0.5 hover:bg-brand-pink"
                 >
-                  <ShoppingBag className="w-4 h-4" />
-                  <span>Add Customized Item to Cart</span>
+                  <ShoppingBag className="h-4 w-4" />
+                  Add customised piece to cart
                 </button>
-
                 <div className="grid grid-cols-2 gap-2.5">
                   <button
-                    onClick={handleBuyNow}
-                    className="flex items-center justify-center gap-1.5 py-3 rounded-xl font-bold text-slate-950 bg-[#fed003] hover:bg-[#ffd926] shadow-sm transition-colors text-xs"
+                    type="button"
+                    onClick={buyNow}
+                    className="flex items-center justify-center gap-1.5 rounded-full bg-brand-gold px-4 py-3 font-mono text-[9px] uppercase tracking-[0.13em] text-brand-navy transition-colors hover:bg-white"
                   >
-                    <span>Instant Checkout</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    Buy now
+                    <ArrowRight className="h-3.5 w-3.5" />
                   </button>
-
                   <button
-                    onClick={handleViewDesignSummary}
-                    className="flex items-center justify-center gap-1.5 py-3 rounded-xl font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors text-xs"
+                    type="button"
+                    onClick={viewSummary}
+                    className="flex items-center justify-center gap-1.5 rounded-full border border-brand-primary/15 bg-white px-4 py-3 font-mono text-[9px] uppercase tracking-[0.13em] text-brand-primary transition-colors hover:bg-brand-lavender"
                   >
-                    <FileCheck className="w-3.5 h-3.5 text-indigo-700" />
-                    <span>View Design Summary</span>
+                    <FileCheck className="h-3.5 w-3.5" />
+                    Design summary
                   </button>
                 </div>
               </div>
 
-              {/* Toast Feedback */}
-              {isAddedToast && (
-                <div className="bg-emerald-50 text-emerald-900 p-3 rounded-xl border border-emerald-200 flex items-center justify-between text-xs animate-in fade-in slide-in-from-bottom-2">
-                  <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600" />
-                    <span>Customized item successfully added to cart!</span>
-                  </div>
-                  <Link href="/cart" className="font-bold underline hover:text-emerald-950">
-                    View Cart
+              <div className="mt-4 flex items-start gap-2 rounded-xl border border-brand-primary/10 bg-brand-lavender/30 px-3 py-2.5">
+                <HelpCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-primary/40" />
+                <p className="font-mono text-[7px] uppercase leading-relaxed tracking-[0.1em] text-brand-navy/40">
+                  Rendering is a design preview, not a manufacturing validation. The studio reviews
+                  wall thickness, supports and finish before printing.
+                </p>
+              </div>
+
+              {added && (
+                <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-brand-teal/20 bg-brand-mint px-3 py-2.5 text-[10px] text-brand-pine">
+                  <span className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-brand-teal" />
+                    Added to cart.
+                  </span>
+                  <Link href="/cart" className="font-mono text-[8px] uppercase tracking-[0.12em] underline">
+                    View cart
                   </Link>
                 </div>
               )}
             </div>
-          </div>
+          </Reveal>
         </div>
       </div>
     </div>

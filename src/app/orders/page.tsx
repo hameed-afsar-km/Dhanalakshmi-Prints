@@ -75,7 +75,7 @@ export default function OrdersHistoryPage() {
             <Package className="w-12 h-12 text-slate-300 mx-auto" />
             <h3 className="text-base font-bold text-slate-800">No orders found</h3>
             <p className="text-xs text-slate-500">You haven&apos;t placed any orders matching &quot;{statusFilter}&quot;.</p>
-            <Link href="/shop" className="inline-block px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-[#1c0b60]">
+            <Link href="/catalogue" className="inline-block px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-[#1c0b60]">
               Browse Products
             </Link>
           </div>

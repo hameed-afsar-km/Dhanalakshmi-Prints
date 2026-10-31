@@ -21,6 +21,12 @@ import { useStore } from '@/lib/store';
 import { CustomPrintRequest, QuotationStatus } from '@/types';
 import { BRAND } from '@/lib/constants';
 
+function defaultValidityDate() {
+  const date = new Date();
+  date.setDate(date.getDate() + 10);
+  return date.toISOString().split('T')[0];
+}
+
 export default function AdminQuotationsPage() {
   const router = useRouter();
   const { quotations, publishQuotation, isAdminLoggedIn } = useStore();
@@ -48,7 +54,7 @@ export default function AdminQuotationsPage() {
     } else {
       setQuotedPrice(quote.preferences.quantity * 350 + 200);
       setEstimatedLeadDays(2);
-      setValidUntilDate(new Date(Date.now() + 10 * 86400000).toISOString().split('T')[0]);
+      setValidUntilDate(defaultValidityDate());
       setOwnerNotes('Inspected geometry: 0.16mm layer height recommended.');
     }
   };

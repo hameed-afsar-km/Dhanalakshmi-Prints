@@ -235,8 +235,8 @@ export default function QuotationDetailPage() {
                   </p>
                 </div>
                 <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs text-slate-600">
-                  <span className="font-semibold text-slate-800 block mb-0.5">Note for Demonstration:</span>
-                  You can open the <Link href="/admin/quotations" className="font-bold text-[#1c0b60] underline">Admin Quotations Portal</Link> to inspect this model and enter a quotation price.
+                  <span className="font-semibold text-slate-800 block mb-0.5">What happens next:</span>
+                  We will email you as soon as your quotation is ready. You can also return to this page for the latest status.
                 </div>
               </div>
             )}

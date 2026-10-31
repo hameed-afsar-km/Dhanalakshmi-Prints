@@ -29,7 +29,7 @@ export default function OrderConfirmationPage() {
     return (
       <div className="w-full min-h-[70vh] flex flex-col items-center justify-center p-6 text-center">
         <h2 className="text-xl font-bold text-slate-900">Order not found</h2>
-        <Link href="/shop" className="mt-4 px-6 py-2.5 rounded-xl font-bold text-xs text-white bg-[#1c0b60]">
+        <Link href="/catalogue" className="mt-4 px-6 py-2.5 rounded-xl font-bold text-xs text-white bg-[#1c0b60]">
           Return to Shop
         </Link>
       </div>
@@ -69,7 +69,7 @@ export default function OrderConfirmationPage() {
               Track Live Order Timeline
             </Link>
             <Link
-              href="/shop"
+              href="/catalogue"
               className="px-6 py-3 rounded-xl font-bold text-xs text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
             >
               Continue Shopping

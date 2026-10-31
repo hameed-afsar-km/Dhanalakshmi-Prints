@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import {
   FileCheck,
   ArrowRight,
@@ -17,64 +16,55 @@ import {
   Palette,
 } from 'lucide-react';
 import { useStore } from '@/lib/store';
-import { calculateCustomizedPrice, calculateOrderSummary } from '@/lib/pricing';
+import { calculateCustomizedPrice } from '@/lib/pricing';
 import ProductViewer3D from '@/components/3d/ProductViewer3D';
 import { Product, SavedCustomization, CartItem } from '@/types';
 import { BRAND } from '@/lib/constants';
+import { getCustomizeHref } from '@/lib/catalog';
 
 export default function DesignSummaryPage() {
-  const router = useRouter();
-  const { cart, products, deliverySettings } = useStore();
+  const { cart, products } = useStore();
 
-  const [activeItem, setActiveItem] = useState<CartItem | null>(null);
-  const [activeProduct, setActiveProduct] = useState<Product | null>(null);
+  const activeItem = useMemo<CartItem | null>(() => {
+    if (cart.length > 0) return cart[0];
+    if (typeof window === 'undefined') return null;
 
-  useEffect(() => {
-    // If cart has items, pick the first item or session-selected item
-    if (cart.length > 0) {
-      const selected = cart[0];
-      setActiveItem(selected);
-      const prod = products.find((p) => p.id === selected.productId);
-      if (prod) setActiveProduct(prod);
-    } else {
-      // Check if session preview exists
-      if (typeof window !== 'undefined') {
-        const previewProdId = sessionStorage.getItem('dp_preview_product_id');
-        const previewCustStr = sessionStorage.getItem('dp_preview_customization');
-        if (previewProdId && previewCustStr) {
-          const prod = products.find((p) => p.id === previewProdId);
-          if (prod) {
-            const cust: SavedCustomization = JSON.parse(previewCustStr);
-            const breakdown = calculateCustomizedPrice(prod, cust, 1);
-            setActiveProduct(prod);
-            setActiveItem({
-              id: 'preview-session',
-              productId: prod.id,
-              productName: prod.name,
-              modelType: prod.modelType,
-              imageUrl: prod.imageUrl,
-              unitPrice: breakdown.unitTotal,
-              quantity: 1,
-              customization: cust,
-              calculatedPriceBreakdown: {
-                basePrice: breakdown.basePrice,
-                personalizationFee: breakdown.personalizationFee,
-                materialSurcharge: breakdown.materialSurcharge,
-                sizeSurcharge: breakdown.sizeSurcharge,
-                accessoriesFee: breakdown.accessoriesFee,
-                unitTotal: breakdown.unitTotal,
-              },
-            });
-          }
-        }
-      }
+    const previewProdId = sessionStorage.getItem('dp_preview_product_id');
+    const previewCustStr = sessionStorage.getItem('dp_preview_customization');
+    if (!previewProdId || !previewCustStr) return null;
+
+    const prod = products.find((product) => product.id === previewProdId);
+    if (!prod) return null;
+
+    try {
+      const cust: SavedCustomization = JSON.parse(previewCustStr);
+      const breakdown = calculateCustomizedPrice(prod, cust, 1);
+      return {
+        id: 'preview-session',
+        productId: prod.id,
+        productName: prod.name,
+        modelType: prod.modelType,
+        imageUrl: prod.imageUrl,
+        unitPrice: breakdown.unitTotal,
+        quantity: 1,
+        customization: cust,
+        calculatedPriceBreakdown: {
+          basePrice: breakdown.basePrice,
+          personalizationFee: breakdown.personalizationFee,
+          materialSurcharge: breakdown.materialSurcharge,
+          sizeSurcharge: breakdown.sizeSurcharge,
+          accessoriesFee: breakdown.accessoriesFee,
+          unitTotal: breakdown.unitTotal,
+        },
+      };
+    } catch {
+      return null;
     }
   }, [cart, products]);
 
-  const summary = calculateOrderSummary(
-    activeItem ? [{ unitPrice: activeItem.unitPrice, quantity: activeItem.quantity }] : [],
-    deliverySettings.defaultDeliveryFee,
-    deliverySettings.freeDeliveryThreshold
+  const activeProduct = useMemo<Product | null>(
+    () => (activeItem ? products.find((product) => product.id === activeItem.productId) ?? null : null),
+    [activeItem, products]
   );
 
   if (!activeItem || !activeProduct) {
@@ -88,7 +78,7 @@ export default function DesignSummaryPage() {
           Please customize a product first or add an item to your cart.
         </p>
         <Link
-          href="/shop"
+          href="/catalogue"
           className="mt-5 px-6 py-2.5 rounded-xl font-bold text-xs text-white bg-[#1c0b60]"
         >
           Explore Catalog
@@ -115,7 +105,7 @@ export default function DesignSummaryPage() {
 
           <div className="flex items-center gap-2">
             <Link
-              href={`/customize/${activeProduct.id}`}
+              href={getCustomizeHref(activeProduct)}
               className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors shadow-xs"
             >
               <Edit3 className="w-3.5 h-3.5 text-indigo-700" />

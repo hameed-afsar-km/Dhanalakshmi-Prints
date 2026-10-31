@@ -17,10 +17,11 @@ import {
 import { useStore } from '@/lib/store';
 import { calculateOrderSummary } from '@/lib/pricing';
 import { BRAND } from '@/lib/constants';
+import { getCustomizeHref } from '@/lib/catalog';
 
 export default function CartPage() {
   const router = useRouter();
-  const { cart, updateCartQuantity, removeFromCart, deliverySettings } = useStore();
+  const { cart, products, updateCartQuantity, removeFromCart, deliverySettings } = useStore();
 
   const summary = calculateOrderSummary(
     cart.map((item) => ({ unitPrice: item.unitPrice, quantity: item.quantity })),
@@ -35,7 +36,7 @@ export default function CartPage() {
         <nav className="flex items-center gap-2 text-xs text-slate-500 mb-6">
           <Link href="/" className="hover:text-slate-900">Home</Link>
           <ChevronRight className="w-3.5 h-3.5" />
-          <Link href="/shop" className="hover:text-slate-900">Shop Catalog</Link>
+          <Link href="/catalogue" className="hover:text-slate-900">Shop Catalog</Link>
           <ChevronRight className="w-3.5 h-3.5" />
           <span className="text-slate-900 font-semibold">Shopping Cart</span>
         </nav>
@@ -59,7 +60,7 @@ export default function CartPage() {
             </div>
             <div className="pt-2">
               <Link
-                href="/shop"
+                href="/catalogue"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white bg-[#1c0b60] hover:bg-[#28137e] transition-colors shadow-md text-xs"
               >
                 <Sparkles className="w-4 h-4 text-amber-300" />
@@ -171,7 +172,10 @@ export default function CartPage() {
                     {/* Actions: Edit & Remove */}
                     <div className="flex items-center gap-3">
                       <Link
-                        href={`/customize/${item.productId}`}
+                        href={(() => {
+                          const product = products.find((candidate) => candidate.id === item.productId);
+                          return product ? getCustomizeHref(product) : '/catalogue';
+                        })()}
                         className="text-xs text-indigo-700 hover:text-indigo-900 font-semibold"
                       >
                         Edit
@@ -191,7 +195,7 @@ export default function CartPage() {
 
               <div className="pt-2 flex justify-between items-center">
                 <Link
-                  href="/shop"
+                  href="/catalogue"
                   className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-slate-900"
                 >
                   <ArrowLeft className="w-4 h-4" />
