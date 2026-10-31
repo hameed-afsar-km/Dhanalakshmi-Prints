@@ -260,23 +260,6 @@ export default function UploadStudio() {
                     className="!h-full !min-h-full !w-full"
                   />
 
-                  {/* Highlight Floating Button when no file is uploaded yet */}
-                  {!file && (
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 pointer-events-auto">
-                      <button
-                        type="button"
-                        onClick={() => inputRef.current?.click()}
-                        className="btn-gradient-loop-glow group flex items-center gap-2 rounded-full px-4 py-2 font-heading text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-white shadow-lg hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
-                      >
-                        <UploadCloud className="h-4 w-4 animate-bounce" />
-                        <span>Upload Your 3D File</span>
-                        <span className="hidden sm:inline font-mono text-[9px] text-white/80 font-normal">
-                          (.STL / .OBJ / .3MF)
-                        </span>
-                      </button>
-                    </div>
-                  )}
-
                   {/* Drag overlay prompt if hovering */}
                   {dragOver && (
                     <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-brand-primary/80 backdrop-blur-xs text-white">
