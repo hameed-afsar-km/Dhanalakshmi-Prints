@@ -53,7 +53,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="footer-animated-gradient relative w-full max-w-full flex flex-col justify-between overflow-hidden text-white py-10 sm:py-12 lg:h-[100svh] lg:min-h-[100svh] lg:max-h-[100svh] lg:py-8 border-t border-white/10">
+    <footer className="footer-animated-gradient relative min-h-[100svh] h-auto lg:h-[100svh] lg:min-h-[100svh] lg:max-h-[100svh] w-full max-w-full flex flex-col justify-between overflow-visible lg:overflow-hidden text-white py-10 sm:py-14 lg:py-8 border-t border-white/10">
       {/* Decorative ambient glowing orbs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
         <div className="absolute -left-20 top-1/4 h-80 w-80 rounded-full bg-brand-pink/20 blur-[100px]" />

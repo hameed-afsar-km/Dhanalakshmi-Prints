@@ -86,7 +86,7 @@ export default function Faq() {
   return (
     <section
       id="faq"
-      className="relative z-10 w-full max-w-full flex flex-col justify-center py-10 sm:py-14 lg:h-[100svh] lg:min-h-[100svh] lg:max-h-[100svh] lg:py-6 overflow-hidden text-black"
+      className="relative z-10 min-h-[100svh] h-auto lg:h-[100svh] lg:min-h-[100svh] lg:max-h-[100svh] w-full max-w-full flex flex-col justify-center py-10 sm:py-14 lg:py-6 overflow-visible lg:overflow-hidden text-black"
       style={{ scrollMarginTop: '80px' }}
     >
       {/* Background Images with 100% full opacity */}

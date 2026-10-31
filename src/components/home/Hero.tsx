@@ -25,10 +25,10 @@ export default function Hero() {
     <section
       ref={sectionRef}
       id="home"
-      className="relative isolate w-full max-w-full px-2 pt-20 pb-3 sm:px-4 sm:pt-24 sm:pb-4 lg:px-5 lg:pt-26 lg:pb-4 overflow-x-clip"
+      className="relative isolate min-h-[100svh] h-auto lg:h-[100svh] lg:min-h-[100svh] lg:max-h-[100svh] w-full max-w-full px-2 pt-16 pb-2 sm:px-4 sm:pt-20 sm:pb-3 lg:px-5 lg:pt-22 lg:pb-3 overflow-hidden flex flex-col justify-center"
     >
-      <div className="relative mx-auto w-full max-w-[1600px]">
-        <div className="relative flex min-h-[580px] sm:min-h-[640px] lg:min-h-[calc(100svh-7.5rem)] flex-col justify-between overflow-hidden rounded-[1.75rem] bg-brand-primary shadow-[0_50px_120px_-60px_rgba(28,11,96,0.75)] sm:rounded-[2.5rem]">
+      <div className="relative mx-auto w-full max-w-[1600px] min-h-[calc(100svh-4.5rem)] lg:min-h-0 lg:h-full flex flex-col justify-between">
+        <div className="relative flex min-h-[calc(100svh-4.5rem)] lg:min-h-0 lg:h-full flex-col justify-between overflow-hidden rounded-[1.75rem] bg-brand-primary shadow-[0_50px_120px_-60px_rgba(28,11,96,0.75)] sm:rounded-[2.5rem]">
           {/* Desktop layered artwork */}
           <div className="absolute inset-0 hidden lg:block" aria-hidden>
             <motion.div
@@ -75,7 +75,7 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* Mobile artwork */}
+          {/* Mobile artwork — anchored at center 66% so the 3D printer sits right under the CTAs without dead void */}
           <div className="absolute inset-0 lg:hidden" aria-hidden>
             <Image
               src="/assets/hero-mob.png"
@@ -83,15 +83,15 @@ export default function Hero() {
               fill
               priority
               sizes="100vw"
-              className="object-cover object-[center_25%] sm:object-center"
+              className="object-cover object-[center_66%] sm:object-center"
             />
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(13,7,43,0.35)_0%,rgba(13,7,43,0.08)_35%,rgba(13,7,43,0.85)_100%)]" />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(13,7,43,0.4)_0%,rgba(13,7,43,0.08)_32%,rgba(13,7,43,0.35)_70%,rgba(13,7,43,0.92)_100%)]" />
           </div>
 
           <div className="hero-vignette pointer-events-none absolute inset-0" aria-hidden />
 
           {/* Main content: positioned down to completely clear DHANALAKSHMI letters above */}
-          <div className="relative z-20 flex flex-1 flex-col justify-start px-5 pt-7 pb-4 sm:px-7 sm:pt-9 lg:px-10 lg:pt-52 xl:pt-56 xl:px-14">
+          <div className="relative z-20 flex flex-1 flex-col justify-start px-4.5 pt-5 sm:px-7 sm:pt-7 lg:px-10 lg:pt-52 xl:pt-56 xl:px-14">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -102,31 +102,30 @@ export default function Hero() {
                 DHANALAKSHMI GIFTS — personalised 3D printed gifts, keepsakes and custom objects
               </h1>
 
-              {/* Mobile Heading - Full uppercase in NECHLAS font */}
-              <p className="font-nechlas text-[clamp(2.4rem,10.5vw,4.5rem)] uppercase leading-[0.96] tracking-[0.02em] text-white lg:hidden">
-                DHANALAKSHMI
-                <br />
-                <span className="text-brand-gold">GIFTS</span>
+              {/* Mobile Heading - Full uppercase in NECHLAS font with generous size & distinct title line spacing */}
+              <p className="font-nechlas text-[clamp(2.85rem,13vw,4.8rem)] uppercase tracking-[0.025em] text-white lg:hidden">
+                <span className="block leading-[1.02]">DHANALAKSHMI</span>
+                <span className="block text-brand-gold leading-[1.05] mt-1 sm:mt-1.5">GIFTS</span>
               </p>
 
               {/* Tagline with relaxed, readable line spacing on mobile */}
-              <p className="mt-3.5 sm:mt-4 max-w-md font-sans text-[13px] sm:text-sm font-normal leading-[1.7] sm:leading-[1.75] tracking-normal text-white/95 drop-shadow-md lg:mt-1 lg:text-[15px] lg:leading-relaxed">
+              <p className="mt-3.5 sm:mt-4.5 max-w-md font-sans text-[13.5px] sm:text-sm font-normal leading-[1.65] sm:leading-[1.75] tracking-normal text-white/95 drop-shadow-md lg:mt-1 lg:text-[15px] lg:leading-relaxed">
                 Personalised gifts, sculptural keepsakes and one-off commissions — designed with
                 you, printed layer by layer in our Tiruchendur studio.
               </p>
 
               {/* CTAs */}
-              <div className="mt-5 sm:mt-6 flex flex-col gap-2.5 sm:flex-row sm:items-center">
+              <div className="mt-4 sm:mt-5 flex flex-col gap-2.5 sm:flex-row sm:items-center">
                 <Link
                   href="/#customize"
-                  className="group flex items-center justify-between gap-4 rounded-full bg-brand-gold px-6 py-3 sm:py-3.5 font-sans text-[11px] font-bold uppercase tracking-[0.16em] text-brand-navy shadow-[0_20px_45px_-22px_rgba(254,208,3,0.55)] transition-all hover:-translate-y-0.5 hover:bg-white sm:min-w-[210px]"
+                  className="group flex items-center justify-between gap-4 rounded-full bg-brand-gold px-5 py-3 font-sans text-[11.5px] font-bold uppercase tracking-[0.16em] text-brand-navy shadow-[0_20px_45px_-22px_rgba(254,208,3,0.55)] transition-all hover:-translate-y-0.5 hover:bg-white sm:min-w-[210px]"
                 >
                   <span>Start customizing</span>
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
                 <Link
                   href="/catalogue"
-                  className="group flex items-center justify-between gap-4 rounded-full border border-white/30 bg-white/10 px-6 py-3 sm:py-3.5 font-sans text-[11px] font-bold uppercase tracking-[0.16em] text-white backdrop-blur-md transition-all hover:-translate-y-0.5 hover:border-white/50 hover:bg-white/20 sm:min-w-[210px]"
+                  className="group flex items-center justify-between gap-4 rounded-full border border-white/30 bg-white/10 px-5 py-3 font-sans text-[11.5px] font-bold uppercase tracking-[0.16em] text-white backdrop-blur-md transition-all hover:-translate-y-0.5 hover:border-white/50 hover:bg-white/20 sm:min-w-[210px]"
                 >
                   <span>Explore designs</span>
                   <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />

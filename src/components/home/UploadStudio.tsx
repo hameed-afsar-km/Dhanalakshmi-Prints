@@ -128,7 +128,7 @@ export default function UploadStudio() {
   };
 
   return (
-    <section id="upload" className="relative z-10 w-full max-w-full flex flex-col justify-center py-10 sm:py-14 lg:h-[100svh] lg:min-h-[100svh] lg:max-h-[100svh] lg:py-6 overflow-hidden bg-[#fbfaff]" style={{ scrollMarginTop: '80px' }}>
+    <section id="upload" className="relative z-10 min-h-[100svh] h-auto lg:h-[100svh] lg:min-h-[100svh] lg:max-h-[100svh] w-full max-w-full flex flex-col justify-center py-10 sm:py-14 lg:py-6 overflow-visible lg:overflow-hidden bg-[#fbfaff]" style={{ scrollMarginTop: '80px' }}>
       {/* Redesigned clean ambient background with animated light orbs & blueprint microgrid */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
         <div className="absolute inset-0 opacity-[0.4] [background-image:radial-gradient(rgba(28,11,96,0.12)_1px,transparent_1px)] [background-size:32px_32px]" />

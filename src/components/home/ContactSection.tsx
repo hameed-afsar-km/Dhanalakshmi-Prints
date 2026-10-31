@@ -37,7 +37,7 @@ export default function ContactSection() {
   return (
     <section
       id="contact"
-      className="relative z-10 w-full max-w-full flex flex-col justify-center py-10 sm:py-14 lg:h-[100svh] lg:min-h-[100svh] lg:max-h-[100svh] lg:py-5 overflow-hidden bg-[#070617] text-white"
+      className="relative z-10 min-h-[100svh] h-auto lg:h-[100svh] lg:min-h-[100svh] lg:max-h-[100svh] w-full max-w-full flex flex-col justify-center py-10 sm:py-14 lg:py-5 overflow-visible lg:overflow-hidden bg-[#070617] text-white"
       style={{ scrollMarginTop: '80px' }}
     >
       {/* Dynamic Animated Ambient Background */}
